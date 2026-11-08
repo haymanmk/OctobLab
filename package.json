@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "playwright test",
-    "test:install": "playwright install --with-deps chromium"
+    "test:install": "playwright install --with-deps chromium",
+    "demos": "node scripts/record-demos.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.4",
@@ -43,7 +44,12 @@
     "@playwright/test": "1.63.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "gifenc": "^1.0.3",
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0",
     "typescript": "~5.9.0"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  }
 }

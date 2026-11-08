@@ -98,6 +98,8 @@ code:not(pre code) { font-family: var(--mono); font-size: .9em; background: var(
 .step .k { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .06em; }
 .step h3 { margin: 2px 0 0; font-size: 17px; }
 .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.demo { margin: 14px 0 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); max-width: 100%; }
+.demo video, .demo img { display: block; width: 100%; height: auto; aspect-ratio: 1100 / 640; }
 .entries { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
 .entry { padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; min-width: 0; }
 .entry:hover { border-color: var(--accent); }

@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import HeroBoard from '../components/HeroBoard.astro';
 import SiteNav from '../components/SiteNav.astro';
 import ArticleList from '../components/ArticleList.astro';
+import Demo from '../components/Demo.astro';
 import { getPosts, BASE } from '../lib/posts';
 const posts = await getPosts();
 const first = posts[0];
@@ -50,9 +51,9 @@ const first = posts[0];
         <h2>Three panes, one article</h2>
         <p class="sub">The structure of the article is the structure of the board. The author decides how deep the cards go; you decide how they are arranged.</p>
         <div class="how">
-          <div class="step"><span class="k">Contents</span><h3>The map on the left</h3><p>A table of contents built from the headings. Click any entry and the board flies to that card and opens it in the reader.</p></div>
-          <div class="step"><span class="k">Board</span><h3>Cards you can expand and move</h3><p>Cards start collapsed. Expand one in place and its neighbours make room. Drag cards, hide or draw connections. A reset puts the author's structure back. Simulations run only while their card is on screen.</p></div>
-          <div class="step"><span class="k">Reader</span><h3>Highlights that become cards</h3><p>Select text in the reader to highlight it and add a note. Drag a highlight onto the board and it becomes a card, linked to where it came from. Everything stays in your browser.</p></div>
+          <div class="step"><span class="k">Contents</span><h3>The map on the left</h3><p>A table of contents built from the headings. Click any entry and the board flies to that card and opens it in the reader.</p><Demo name="contents" alt="Clicking entries in the contents list; the board pans to each card and the reader shows it" /></div>
+          <div class="step"><span class="k">Board</span><h3>Cards you can expand and move</h3><p>Cards start collapsed. Expand one in place and its neighbours make room. Drag cards, hide or draw connections. A reset puts the author's structure back. Simulations run only while their card is on screen.</p><Demo name="board" alt="Expanding a card so its neighbours move aside, dragging a card, and drawing a connection between two cards" /></div>
+          <div class="step"><span class="k">Reader</span><h3>Highlights that become cards</h3><p>Select text in the reader to highlight it and add a note. Drag a highlight onto the board and it becomes a card, linked to where it came from. Everything stays in your browser.</p><Demo name="reader" alt="Selecting text in the reader, highlighting it, and dragging the highlight onto the board where it becomes a note card" /></div>
         </div>
       </section>
 
@@ -74,6 +75,13 @@ const first = posts[0];
         <p><a href="https://github.com/haymanmk/OctobLab">Source on GitHub</a></p>
       </section>
 
+      <script>
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll<HTMLVideoElement>('video.demo-video').forEach(v => {
+          if (reduce) { v.removeAttribute('autoplay'); v.pause(); v.controls = true; return; }
+          if (!v.canPlayType('video/webm')) { const img = document.createElement('img'); img.src = v.dataset.gif!; img.alt = v.getAttribute('aria-label') || ''; img.width = v.width; img.height = v.height; v.replaceWith(img); }
+        });
+      </script>
       <footer>
         <span>OctobLab · built from Markdown</span>
         <span>Highlights and layouts stay on your device.</span>
