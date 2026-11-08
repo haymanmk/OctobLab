@@ -31,7 +31,15 @@ Inside the body:
   ```
   ````
 
-- Math uses `$…$` and `$$…$$` (KaTeX at build time). Code blocks are highlighted with Shiki in both themes.
+- Inline math uses `$…$`. Display math is centred on its own line and needs the `$$` fences on their own lines:
+
+  ```markdown
+  $$
+  \dot{\hat d} = L\,(d - \hat d)
+  $$
+  ```
+
+  A single-line `$$…$$` is treated as inline math by the Markdown parser. KaTeX renders both at build time. Code blocks are highlighted with Shiki in both themes.
 
 Widgets are React components registered in `src/app/widgets/registry.ts`. They receive their fence config as `props` and an `active` flag that is false while they are off screen, so simulations pause.
 

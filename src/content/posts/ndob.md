@@ -22,8 +22,9 @@ Expand any card on the board to read it in place, or open it in the reader to hi
 
 Take a single joint with inertia $J$ and viscous friction $b$:
 
-$$J\ddot q + b\dot q = \tau + d$$
-
+$$
+J\ddot q + b\dot q = \tau + d
+$$
 Here $d$ lumps everything the model does not describe: payload torque, friction mismatch, gravity error, coupling from other joints. The classical answers to $d$ each have a cost.
 
 - **High-gain PD** suppresses $d$ in proportion to the gain, but it also amplifies encoder noise and excites the first structural resonance.
@@ -38,8 +39,9 @@ A DOB splits the problem in two. A feedback controller handles the nominal plant
 
 The classical observer compares what the plant did with what the nominal model $P_n(s)$ predicts for the same torque:
 
-$$\hat d = Q(s)\left[P_n^{-1}(s)\,y - \tau\right]$$
-
+$$
+\hat d = Q(s)\left[P_n^{-1}(s)\,y - \tau\right]
+$$
 $Q(s)$ is a low-pass filter, and its bandwidth is the one knob. Raise it and $\hat d$ follows fast changes in $d$, but sensor noise passes through $P_n^{-1}$, which is improper and amplifies high frequencies. Lower it and the estimate lags.
 
 Two things break on a manipulator. First, $P_n^{-1}$ needs a *linear* nominal model, but the inertia matrix $M(q)$, the Coriolis terms and gravity all change with configuration, so a model linearised at one pose is wrong at another. Second, the relative degree of $Q$ must at least match that of $P_n$ for $Q P_n^{-1}$ to be realisable, which forces a second-order filter and extra lag. The nonlinear DOB removes both problems by working in state space instead of transfer functions.
@@ -50,16 +52,19 @@ Two things break on a manipulator. First, $P_n^{-1}$ needs a *linear* nominal mo
 
 For the full rigid-body model
 
-$$M(q)\ddot q + C(q,\dot q)\dot q + g(q) = \tau + d$$
-
+$$
+M(q)\ddot q + C(q,\dot q)\dot q + g(q) = \tau + d
+$$
 Chen, Ballance, Gawthrop and O'Reilly (2000) proposed the observer
 
-$$\hat d = z + p(q,\dot q), \qquad \dot z = -L\,z + L\left[C(q,\dot q)\dot q + g(q) - \tau - p(q,\dot q)\right]$$
-
+$$
+\hat d = z + p(q,\dot q), \qquad \dot z = -L\,z + L\left[C(q,\dot q)\dot q + g(q) - \tau - p(q,\dot q)\right]
+$$
 with the design condition $\dfrac{\partial p}{\partial \dot q} = L\,M(q)$. The construction looks odd until you differentiate $\hat d$ and substitute the dynamics: every term with $\ddot q$ cancels, and what remains is
 
-$$\dot{\hat d} = L\,(d - \hat d)$$
-
+$$
+\dot{\hat d} = L\,(d - \hat d)
+$$
 So the estimation error $e = d - \hat d$ obeys $\dot e = \dot d - L e$. If the disturbance changes slowly, $e$ decays exponentially at the rate set by $L$, and no acceleration signal is ever formed. That is the whole trick: $p(q,\dot q)$ is chosen so that the acceleration term appears twice with opposite signs.
 
 For a single joint with constant inertia this collapses to $p = L J \dot q$ and a scalar gain $L$, which is what the simulation card runs.
@@ -85,8 +90,9 @@ A practical procedure on hardware: start with $L$ well below the velocity-loop b
 
 The convergence proof assumes $\dot d \approx 0$. Real disturbances move. For a sinusoidal component at frequency $\omega$, the error dynamics $\dot e = \dot d - L e$ give a steady-state magnitude ratio
 
-$$\frac{|e|}{|d|} = \frac{\omega}{\sqrt{\omega^2 + L^2}}$$
-
+$$
+\frac{|e|}{|d|} = \frac{\omega}{\sqrt{\omega^2 + L^2}}
+$$
 At $\omega = L$ the observer still misses about 71% of that component. To track a disturbance at $\omega$ to within 10% you need $L \approx 10\,\omega$. Periodic disturbances from gear meshing or a rotating payload are often faster than any $L$ the noise budget allows, which is where repetitive or harmonic observers take over.
 
 ### Where the estimate enters the loop
@@ -95,8 +101,9 @@ At $\omega = L$ the observer still misses about 71% of that component. To track 
 
 With a nominal controller output $u$, command
 
-$$\tau = u - \hat d$$
-
+$$
+\tau = u - \hat d
+$$
 and the closed-loop dynamics become $M\ddot q + C\dot q + g = u + (d - \hat d) = u + e$. The controller sees the nominal plant plus a residual that shrinks at rate $L$. This is why you can tune the PD or computed-torque loop on the nominal model and leave disturbance rejection to the observer.
 
 Keep $\hat d$ out of the model-based terms, though. Feeding it into the $M(q)$ or $g(q)$ compensation creates an algebraic loop with the observer's own $p(q,\dot q)$ and is a common source of limit cycles.
