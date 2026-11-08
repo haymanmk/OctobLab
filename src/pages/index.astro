@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import HeroBoard from '../components/HeroBoard.astro';
 import SiteNav from '../components/SiteNav.astro';
 import ArticleList from '../components/ArticleList.astro';
-import Demo from '../components/Demo.astro';
+import DemoStage from '../components/DemoStage.astro';
 import { getPosts, BASE } from '../lib/posts';
 const posts = await getPosts();
 const first = posts[0];
@@ -50,11 +50,16 @@ const first = posts[0];
         <div class="eyebrow">How it reads</div>
         <h2>Three panes, one article</h2>
         <p class="sub">The structure of the article is the structure of the board. The author decides how deep the cards go; you decide how they are arranged.</p>
-        <div class="how">
-          <div class="step"><span class="k">Contents</span><h3>The map on the left</h3><p>A table of contents built from the headings. Click any entry and the board flies to that card and opens it in the reader.</p><Demo name="contents" alt="Clicking entries in the contents list; the board pans to each card and the reader shows it" /></div>
-          <div class="step"><span class="k">Board</span><h3>Cards you can expand and move</h3><p>Cards start collapsed. Expand one in place and its neighbours make room. Drag cards, hide or draw connections. A reset puts the author's structure back. Simulations run only while their card is on screen.</p><Demo name="board" alt="Expanding a card so its neighbours move aside, dragging a card, and drawing a connection between two cards" /></div>
-          <div class="step"><span class="k">Reader</span><h3>Highlights that become cards</h3><p>Select text in the reader to highlight it and add a note. Drag a highlight onto the board and it becomes a card, linked to where it came from. Everything stays in your browser.</p><Demo name="reader" alt="Selecting text in the reader, highlighting it, and dragging the highlight onto the board where it becomes a note card" /></div>
+        <div class="how" role="tablist" aria-label="The three panes">
+          <div class="step active" role="tab" tabindex="0" aria-selected="true" data-clip="contents"><span class="k">Contents</span><h3>The map on the left</h3><p>A table of contents built from the headings. Click any entry and the board flies to that card and opens it in the reader.</p></div>
+          <div class="step" role="tab" tabindex="0" aria-selected="false" data-clip="board"><span class="k">Board</span><h3>Cards you can expand and move</h3><p>Cards start collapsed. Expand one in place and its neighbours make room. Drag cards, hide or draw connections. A reset puts the author's structure back. Simulations run only while their card is on screen.</p></div>
+          <div class="step" role="tab" tabindex="0" aria-selected="false" data-clip="reader"><span class="k">Reader</span><h3>Highlights that become cards</h3><p>Select text in the reader to highlight it and add a note. Drag a highlight onto the board and it becomes a card, linked to where it came from. Everything stays in your browser.</p></div>
         </div>
+        <DemoStage clips={[
+          { name: 'contents', label: 'Contents · the map on the left', alt: 'Clicking entries in the contents list; the board pans to each card and the reader shows it' },
+          { name: 'board', label: 'Board · cards you can expand and move', alt: 'Expanding a card so its neighbours move aside, dragging a card, and drawing a connection between two cards' },
+          { name: 'reader', label: 'Reader · highlights that become cards', alt: 'Selecting text in the reader, highlighting it, and dragging the highlight onto the board where it becomes a note card' },
+        ]} />
       </section>
 
       <section class="section" id="entries">
@@ -76,11 +81,45 @@ const first = posts[0];
       </section>
 
       <script>
-        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        document.querySelectorAll<HTMLVideoElement>('video.demo-video').forEach(v => {
-          if (reduce) { v.removeAttribute('autoplay'); v.pause(); v.controls = true; return; }
-          if (!v.canPlayType('video/webm')) { const img = document.createElement('img'); img.src = v.dataset.gif!; img.alt = v.getAttribute('aria-label') || ''; img.width = v.width; img.height = v.height; v.replaceWith(img); }
-        });
+        /* The stage plays the three clips in turn and loops. Columns are tabs; off screen it pauses; reduced motion gets stills with controls. */
+        const videos = [...document.querySelectorAll<HTMLVideoElement>('.stage-video')];
+        const steps = [...document.querySelectorAll<HTMLElement>('.how .step')];
+        const bar = document.querySelector<HTMLElement>('.stage-bar span');
+        const now = document.querySelector<HTMLElement>('.stage-now');
+        const stage = document.getElementById('stage');
+        if (videos.length && stage) {
+          const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const webm = !!videos[0].canPlayType('video/webm');
+          const slots: HTMLElement[] = videos.map(v => {
+            if (webm) return v;
+            const img = document.createElement('img'); img.className = 'stage-video'; img.src = v.dataset.gif!; img.alt = v.getAttribute('aria-label') || ''; img.width = v.width; img.height = v.height; img.hidden = v.hidden;
+            Object.assign(img.dataset, { seconds: v.dataset.seconds, label: v.dataset.label }); v.replaceWith(img); return img;
+          });
+          let i = 0, timer = 0, raf = 0, startedAt = 0, visible = true;
+          const seconds = (el: HTMLElement) => +(el.dataset.seconds || 8);
+          const stop = () => { clearTimeout(timer); cancelAnimationFrame(raf); const el = slots[i]; if (el instanceof HTMLVideoElement) el.pause(); };
+          const tick = () => { const el = slots[i]; const f = el instanceof HTMLVideoElement && el.duration ? el.currentTime / el.duration : (performance.now() - startedAt) / 1000 / seconds(el); if (bar) bar.style.width = Math.min(100, f * 100) + '%'; raf = requestAnimationFrame(tick); };
+          const play = () => {
+            if (reduce || !visible) return;
+            const el = slots[i]; startedAt = performance.now();
+            if (el instanceof HTMLVideoElement) { el.currentTime = 0; el.play().catch(() => {}); }
+            else { el.setAttribute('src', el.dataset.gif || (el as HTMLImageElement).src); timer = window.setTimeout(() => show(i + 1), seconds(el) * 1000); }
+            raf = requestAnimationFrame(tick);
+          };
+          const show = (n: number) => {
+            stop(); i = (n + slots.length) % slots.length;
+            slots.forEach((el, k) => { el.hidden = k !== i; });
+            steps.forEach((s, k) => { s.classList.toggle('active', k === i); s.setAttribute('aria-selected', String(k === i)); });
+            if (now) now.textContent = slots[i].dataset.label || '';
+            if (bar) bar.style.width = '0%';
+            play();
+          };
+          videos.forEach(v => { v.addEventListener('ended', () => show(i + 1)); if (reduce) v.controls = true; });
+          steps.forEach((s, k) => { s.addEventListener('click', () => show(k)); s.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(k); } }); });
+          new IntersectionObserver(es => { visible = es.some(e => e.isIntersecting); if (visible) play(); else stop(); }, { threshold: 0.2 }).observe(stage);
+          document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else play(); });
+          show(0);
+        }
       </script>
       <footer>
         <span>OctobLab · built from Markdown</span>

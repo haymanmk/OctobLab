@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const W = 1100, H = 640, FPS = 10, SCALE = 0.8; // frames are captured at W*SCALE x H*SCALE
+const W = 1100, H = 640, FPS = 10, SCALE = 1; // frames are captured at W*SCALE x H*SCALE
 const OUT = path.resolve('public/media');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -133,6 +133,8 @@ const only = process.argv.slice(2);
 const { base, stop } = await ensureServer();
 const browser = await chromium.launch();
 fs.mkdirSync(OUT, { recursive: true });
+const metaFile = path.resolve('src/data/demos.json');
+const meta = fs.existsSync(metaFile) ? JSON.parse(fs.readFileSync(metaFile, 'utf8')) : {};
 try {
   for (const name of Object.keys(demos)) {
     if (only.length && !only.includes(name)) continue;
@@ -140,6 +142,8 @@ try {
     fs.writeFileSync(path.join(OUT, `${name}.png`), frames[0]);
     encodeGif(frames, path.join(OUT, `${name}.gif`));
     await encodeWebm(frames, path.join(OUT, `${name}.webm`));
+    meta[name] = { frames: frames.length, seconds: +(frames.length / FPS).toFixed(1), width: Math.round(W * SCALE), height: Math.round(H * SCALE) };
+    fs.mkdirSync(path.dirname(metaFile), { recursive: true }); fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2) + '\n');
     console.log(name, frames.length, 'frames', (fs.statSync(path.join(OUT, `${name}.gif`)).size / 1e6).toFixed(2) + ' MB gif', (fs.statSync(path.join(OUT, `${name}.webm`)).size / 1e6).toFixed(2) + ' MB webm');
   }
 } finally { await browser.close(); stop(); }

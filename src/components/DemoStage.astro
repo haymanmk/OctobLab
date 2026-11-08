@@ -1,0 +1,21 @@
+---
+/* One large stage that plays the three clips in turn. The columns above act as its tabs. */
+import { BASE } from '../lib/posts';
+import meta from '../data/demos.json';
+interface Clip { name: keyof typeof meta; label: string; alt: string }
+interface Props { clips: Clip[] }
+const { clips } = Astro.props;
+---
+<figure class="stage" id="stage" aria-label="Short clips of the three panes">
+  <div class="stage-frame">
+    {clips.map((c, i) => (
+      <video class="stage-video" data-name={c.name} data-seconds={meta[c.name].seconds} data-gif={`${BASE}media/${c.name}.gif`} data-label={c.label}
+        muted playsinline preload={i === 0 ? 'auto' : 'metadata'} poster={`${BASE}media/${c.name}.png`} aria-label={c.alt} width={meta[c.name].width} height={meta[c.name].height} hidden={i > 0}>
+        <source src={`${BASE}media/${c.name}.webm`} type="video/webm" />
+        <img src={`${BASE}media/${c.name}.gif`} alt={c.alt} loading="lazy" width={meta[c.name].width} height={meta[c.name].height} />
+      </video>
+    ))}
+  </div>
+  <div class="stage-bar" aria-hidden="true"><span></span></div>
+  <figcaption class="stage-cap"><span class="stage-now">{clips[0].label}</span><span class="stage-hint">Plays each pane in turn. Click a column to jump to it.</span></figcaption>
+</figure>

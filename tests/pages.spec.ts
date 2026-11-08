@@ -36,3 +36,21 @@ test('the articles page lists every post with both ways to read it, and tag page
   await page.getByRole('navigation').getByRole('link', { name: 'Articles' }).click();
   await expect(page).toHaveURL(/articles\/$/);
 });
+
+test('the home page stage plays the three clips in turn and the columns switch it', async ({ page }) => {
+  await page.goto('');
+  const videos = page.locator('.stage-video');
+  await expect(videos).toHaveCount(3);
+  await expect(videos.nth(0)).toBeVisible();
+  await expect(videos.nth(1)).toBeHidden();
+  await expect(page.locator('.how .step').nth(0)).toHaveClass(/active/);
+  await page.locator('.how .step').nth(2).click();
+  await expect(videos.nth(2)).toBeVisible();
+  await expect(videos.nth(0)).toBeHidden();
+  await expect(page.locator('.how .step').nth(2)).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.stage-now')).toContainText('Reader');
+  // the clip ends and the stage moves on to the first one by itself
+  await page.locator('.stage-video').nth(2).evaluate(v => { const el = v as HTMLVideoElement; if (el.duration) el.currentTime = el.duration - 0.2; });
+  await expect(videos.nth(0)).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.stage-now')).toContainText('Contents');
+});
