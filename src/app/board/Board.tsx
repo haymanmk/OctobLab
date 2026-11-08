@@ -128,8 +128,10 @@ function BoardInner() {
 
   const setInput = useStore(s => s.setInput);
   const nExp = expanded.length;
+  /* keep the browser's own middle-click autoscroll and paste out of the board */
+  const onMouseDownCapture = useCallback((e: React.MouseEvent) => { if (e.button === 1) e.preventDefault(); }, []);
   return (
-    <div ref={wrap} className={'board' + (anim ? ' animate' : '')} data-testid="board">
+    <div ref={wrap} className={'board' + (anim ? ' animate' : '')} data-testid="board" onMouseDownCapture={onMouseDownCapture} onAuxClick={e => { if (e.button === 1) e.preventDefault(); }}>
       <svg className="edge-markers" width="0" height="0" aria-hidden="true"><defs>
         <marker id="arrow-h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style={{ fill: 'var(--edge)' }} /></marker>
         <marker id="arrow-user" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style={{ fill: 'var(--edge-user)' }} /></marker>
@@ -138,7 +140,7 @@ function BoardInner() {
       <ReactFlow<AnyNode, Edge>
         nodes={nodes} edges={edges} nodeTypes={nodeTypes}
         onNodesChange={onNodesChange} onNodeClick={onNodeClick} onNodeDragStop={onNodeDragStop} onConnect={onConnect} onConnectEnd={onConnectEnd} onEdgeClick={onEdgeClick}
-        minZoom={0.2} maxZoom={2.5} nodeDragThreshold={3} zoomOnDoubleClick={false} selectionOnDrag={false} panOnDrag zoomOnPinch
+        minZoom={0.2} maxZoom={2.5} nodeDragThreshold={3} zoomOnDoubleClick={false} selectionOnDrag={false} panOnDrag={input === 'mouse' ? [1] : true} zoomOnPinch
         zoomOnScroll={input === 'mouse'} panOnScroll={input === 'touch'} connectionRadius={60} elevateNodesOnSelect
         deleteKeyCode={null} multiSelectionKeyCode={null} selectionKeyCode={null}
         proOptions={{ hideAttribution: false }}>
@@ -156,7 +158,7 @@ function BoardInner() {
           <span className={'chip' + (nExp > SOFT_LIMIT ? ' over' : '')} data-testid="chip">{nExp} expanded</span>
         </Panel>
         <Panel position="bottom-left" className="boardhint">
-          {input === 'mouse' ? 'scroll to zoom · drag the background to pan · drag a card to move it · drag a card’s dot to another card to connect · click an arrow to hide it'
+          {input === 'mouse' ? 'scroll to zoom · hold the middle button to pan · drag a card to move it · drag a card\u2019s dot to another card to connect · click an arrow to hide it'
             : 'pinch or ctrl + scroll to zoom · drag the background to pan · drag a card’s title to move it · drag a card’s dot to another card to connect · tap an arrow to hide it'}
         </Panel>
       </ReactFlow>

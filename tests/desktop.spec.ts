@@ -81,7 +81,7 @@ test.describe('board on a desktop', () => {
     await expect(page.locator('.react-flow__edge.edge-user')).toHaveCount(0);
   });
 
-  test('dragging a card moves it and a background drag pans', async ({ page }) => {
+  test('dragging a card moves it; the middle button pans, a left-drag on the background does not', async ({ page }) => {
     await openBoard(page);
     const hb = (await page.locator(card('why-a-disturbance-observer-at-all') + ' .card-head').boundingBox())!;
     const before = await page.locator(card('why-a-disturbance-observer-at-all')).evaluate(el => el.style.transform);
@@ -93,7 +93,17 @@ test.describe('board on a desktop', () => {
     const vp0 = await page.locator('.react-flow__viewport').evaluate(el => el.style.transform);
     const bg = await bgPoint(page);
     await page.mouse.move(bg.x, bg.y); await page.mouse.down(); await page.mouse.move(bg.x + 60, bg.y - 40, { steps: 6 }); await page.mouse.up();
+    expect(await page.locator('.react-flow__viewport').evaluate(el => el.style.transform)).toBe(vp0);
+    await page.mouse.move(bg.x, bg.y); await page.mouse.down({ button: 'middle' }); await page.mouse.move(bg.x + 60, bg.y - 40, { steps: 6 }); await page.mouse.up({ button: 'middle' });
     expect(await page.locator('.react-flow__viewport').evaluate(el => el.style.transform)).not.toBe(vp0);
+    // the middle button also pans from over a card, without moving the card or opening it
+    const body = (await page.locator(card('the-nonlinear-dob') + ' .card-body').boundingBox())!;
+    const vp1 = await page.locator('.react-flow__viewport').evaluate(el => el.style.transform);
+    const p1 = await page.locator(card('the-nonlinear-dob')).evaluate(el => el.style.transform);
+    await page.mouse.move(body.x + 40, body.y + 20); await page.mouse.down({ button: 'middle' }); await page.mouse.move(body.x + 140, body.y + 90, { steps: 6 }); await page.mouse.up({ button: 'middle' });
+    expect(await page.locator('.react-flow__viewport').evaluate(el => el.style.transform)).not.toBe(vp1);
+    expect(await page.locator(card('the-nonlinear-dob')).evaluate(el => el.style.transform)).toBe(p1);
+    await expect(page.getByTestId('reader-title')).toHaveCount(0);
     await page.getByRole('button', { name: 'Tidy' }).click(); await page.waitForTimeout(800);
     expect(await overlaps(page)).toEqual([]);
   });
