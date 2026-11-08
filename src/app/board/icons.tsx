@@ -1,0 +1,12 @@
+export const IconExpand = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10V4h6M20 14v6h-6M4 4l7 7M20 20l-7-7" /></svg>;
+export const IconCollapse = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4v6H4M14 20v-6h6M10 10L4 4M14 14l6 6" /></svg>;
+export const IconClose = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>;
+export const IconMenu = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" /></svg>;
+export const IconBack = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>;
+export const IconTheme = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 4v16A8 8 0 0 0 12 4z" fill="currentColor" stroke="none" /></svg>;
+export const IconReader = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M14 4v16" /></svg>;
+export const IconFold = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="8" height="14" rx="1.5" /><rect x="13" y="5" width="8" height="14" rx="1.5" /></svg>;
+export const IconLocate = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg>;
+export const IconBoard = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="6" rx="1" /><rect x="14" y="4" width="7" height="6" rx="1" /><rect x="8" y="14" width="8" height="6" rx="1" /></svg>;
+export const IconRead = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8" /></svg>;
+export const IconNotes = () => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3" /></svg>;

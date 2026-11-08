@@ -1,0 +1,36 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ThemeToggle from '../../../components/ThemeToggle.astro';
+import WidgetMount from '../../../components/WidgetMount';
+import { getPosts, articleOf, BASE } from '../../../lib/posts';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map(p => ({ params: { slug: p.id }, props: { entry: p } }));
+}
+const { entry } = Astro.props;
+const article = await articleOf(entry);
+const canonical = new URL(`${BASE}posts/${article.id}/read/`, Astro.site).toString();
+const root = article.cards[0];
+const rest = article.cards.slice(1);
+---
+<Base title={`${article.title} · OctobLab`} description={article.description} canonical={canonical}>
+  <main class="read-page">
+    <div class="readbar">
+      <a href={BASE}>← OctobLab</a>
+      <ThemeToggle />
+      <a class="board-link btn small" href={`${BASE}posts/${article.id}/`}>Open on the board</a>
+    </div>
+    <article>
+      <h1>{article.title}</h1>
+      <div class="lmeta">{article.date} · {article.cards.length} cards · the same cards, read top to bottom</div>
+      <Fragment set:html={root.html} />
+      {rest.map(c => (
+        <section id={c.id}>
+          {c.level === 2 ? <h2>{c.title}</h2> : c.level === 3 ? <h3>{c.title}</h3> : <h4>{c.title}</h4>}
+          <Fragment set:html={c.html} />
+        </section>
+      ))}
+    </article>
+  </main>
+  <WidgetMount client:idle />
+</Base>

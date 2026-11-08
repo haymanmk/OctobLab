@@ -1,0 +1,49 @@
+{
+  "name": "octoblab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Card-based reading of robot control and physical AI notes. Markdown in, a whiteboard of cards out.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "playwright test",
+    "test:install": "playwright install --with-deps chromium"
+  },
+  "dependencies": {
+    "@astrojs/react": "^7.1.4",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "@shikijs/rehype": "^4.6.0",
+    "@xyflow/react": "^12.12.1",
+    "astro": "^7.4.7",
+    "dexie": "^4.4.7",
+    "github-slugger": "^2.0.0",
+    "html-react-parser": "^6.1.9",
+    "katex": "^0.19.1",
+    "mdast-util-to-string": "^4.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0",
+    "yaml": "^2.9.1",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@playwright/test": "1.63.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "~5.9.0"
+  },
+  "engines": { "node": ">=22" }
+}

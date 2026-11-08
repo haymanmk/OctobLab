@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+import HeroBoard from '../components/HeroBoard.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { getPosts, articleOf, BASE } from '../lib/posts';
+const posts = await getPosts();
+const first = posts[0];
+const counts = await Promise.all(posts.map(async p => (await articleOf(p)).cards.length));
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
+---
+<Base title="OctobLab" canonical={new URL(BASE, Astro.site).toString()}>
+  <div class="home">
+    <div class="home-wrap">
+      <header class="topnav">
+        <a class="brand" href={BASE} aria-label="Home">
+          <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="5" width="7" height="8" rx="1.5" fill="var(--accent)"/><rect x="14" y="1" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><rect x="14" y="11" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><path d="M8 9h3c1.5 0 1.5-5 3-5M8 9h3c1.5 0 1.5 5 3 5" fill="none" stroke="var(--fg)" stroke-width="1.2"/></svg>
+          OctobLab
+        </a>
+        <nav>
+          <a href="#articles">Articles</a>
+          <a href="#how">How it reads</a>
+          {first && <a href={`${BASE}posts/${first.id}/#notes`}>My notes</a>}
+          <a href="#about">About</a>
+        </nav>
+        <ThemeToggle />
+      </header>
+
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Robot control · physical AI · working notes</div>
+          <h1>Read robotics like a whiteboard, not a scroll.</h1>
+          <p class="lede">Every article here is a map of cards. Expand a card where it sits, open it in the reader beside the map, highlight what matters, and pin your own notes next to the ideas they came from. The simulations live inside the cards, so the equations move.</p>
+          <div class="cta">
+            {first && <a class="btn primary" href={`${BASE}posts/${first.id}/`}>Open the first article</a>}
+            <a class="btn" href="#how">How it reads</a>
+          </div>
+        </div>
+        {first && <HeroBoard href={`${BASE}posts/${first.id}/`} />}
+      </section>
+
+      <section class="section" id="articles">
+        <div class="eyebrow">Articles</div>
+        <h2>Start with one deep topic</h2>
+        <p class="sub">Niche first, broad later. Each article is written in Markdown and split into cards by its headings, so it also exists as a plain page for search engines and feed readers.</p>
+        <div class="article-list">
+          {posts.map((p, i) => (
+            <a class="post" href={`${BASE}posts/${p.id}/`}>
+              <div class="meta"><span>{fmt(p.data.date)}</span><span>{counts[i]} cards</span>{p.data.tags.slice(0, 2).map(t => <span>{t}</span>)}</div>
+              <h3>{p.data.title}</h3>
+              <p>{p.data.description}</p>
+              <div class="links"><span>Board</span><span>·</span><span>Read as a page</span></div>
+            </a>
+          ))}
+          <div class="post planned">
+            <div class="meta"><span>Planned</span><span>Identification</span></div>
+            <h3>Friction identification you can run in an afternoon</h3>
+            <p>Stribeck fits, what the encoder resolution does to them, and how to feed the result into the observer.</p>
+          </div>
+          <div class="post planned">
+            <div class="meta"><span>Planned</span><span>Learning</span></div>
+            <h3>Sim-to-real for joint-level policies</h3>
+            <p>Which physical effects break a learned controller first, and how the disturbance observer buys margin.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <div class="eyebrow">How it reads</div>
+        <h2>Three panes, one article</h2>
+        <p class="sub">The structure of the article is the structure of the board. The author decides how deep the cards go; you decide how they are arranged.</p>
+        <div class="how">
+          <div class="step"><span class="k">Contents</span><h3>The map on the left</h3><p>A table of contents built from the headings. Click any entry and the board flies to that card and opens it in the reader.</p></div>
+          <div class="step"><span class="k">Board</span><h3>Cards you can expand and move</h3><p>Cards start collapsed. Expand one in place and its neighbours make room. Drag cards, hide or draw connections. A reset puts the author's structure back. Simulations run only while their card is on screen.</p></div>
+          <div class="step"><span class="k">Reader</span><h3>Highlights that become cards</h3><p>Select text in the reader to highlight it and add a note. Drag a highlight onto the board and it becomes a card, linked to where it came from. Everything stays in your browser.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="entries">
+        <div class="eyebrow">Entry points</div>
+        <h2>Where to go</h2>
+        <div class="entries">
+          <a class="entry" href="#articles"><b>Articles</b><span>Long-form topics, one board each.</span></a>
+          {first && <a class="entry" href={`${BASE}posts/${first.id}/#notes`}><b>My notes</b><span>Your highlights and board notes, kept on this device.</span></a>}
+          <a class="entry" href={`${BASE}rss.xml`}><b>Feed</b><span>RSS of new articles.</span></a>
+          <a class="entry" href="#about"><b>About</b><span>Who writes this and why.</span></a>
+        </div>
+      </section>
+
+      <section class="section about" id="about">
+        <div class="eyebrow">About</div>
+        <h2>Notes from building robots</h2>
+        <p>These are working notes from robot development: control, estimation, and what survives contact with real hardware. The site is a static build on GitHub Pages. Your highlights, notes and board layouts are stored in your own browser, and you can export them as a file. A sync plan for them may come later.</p>
+        <p><a href="https://github.com/haymanmk/OctobLab">Source on GitHub</a></p>
+      </section>
+
+      <footer>
+        <span>OctobLab · built from Markdown</span>
+        <span>Highlights and layouts stay on your device.</span>
+      </footer>
+    </div>
+  </div>
+</Base>

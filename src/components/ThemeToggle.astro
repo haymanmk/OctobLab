@@ -1,0 +1,9 @@
+---
+---
+<button type="button" class="iconbtn" data-theme-toggle title="Toggle light or dark theme" aria-label="Toggle theme">
+  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 4v16A8 8 0 0 0 12 4z" fill="currentColor" stroke="none" /></svg>
+</button>
+<script>
+  import { toggleTheme } from '../app/theme';
+  document.querySelectorAll('[data-theme-toggle]').forEach(b => b.addEventListener('click', () => toggleTheme()));
+</script>

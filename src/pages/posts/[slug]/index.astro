@@ -1,0 +1,16 @@
+---
+import Base from '../../../layouts/Base.astro';
+import BoardApp from '../../../app/BoardApp';
+import { getPosts, articleOf, BASE } from '../../../lib/posts';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map(p => ({ params: { slug: p.id }, props: { entry: p } }));
+}
+const { entry } = Astro.props;
+const article = await articleOf(entry);
+const canonical = new URL(`${BASE}posts/${article.id}/`, Astro.site).toString();
+---
+<Base title={`${article.title} · OctobLab`} description={article.description} bodyClass="app-page" canonical={canonical}>
+  <noscript><div class="noscript">The board needs JavaScript. <a href={`${BASE}posts/${article.id}/read/`}>Read the article as a page instead</a>.</div></noscript>
+  <BoardApp client:only="react" article={article} base={BASE} />
+</Base>

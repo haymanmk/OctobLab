@@ -1,0 +1,31 @@
+---
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+interface Props { title: string; description?: string; bodyClass?: string; canonical?: string }
+const { title, description = 'Working notes on robot control and physical AI, read as a whiteboard of cards.', bodyClass = '', canonical } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="OctobLab" href={`${base}rss.xml`} />
+    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="OctobLab" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+    <script is:inline>try{var t=JSON.parse(localStorage.getItem('octoblab.theme'));if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+  </head>
+  <body class={bodyClass}>
+    <slot />
+  </body>
+</html>
