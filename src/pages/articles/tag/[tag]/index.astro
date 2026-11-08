@@ -1,0 +1,26 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import SiteNav from '../../../../components/SiteNav.astro';
+import ArticleList from '../../../../components/ArticleList.astro';
+import { getPosts, BASE } from '../../../../lib/posts';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const tags = [...new Set(posts.flatMap(p => p.data.tags))];
+  return tags.map(tag => ({ params: { tag }, props: { posts: posts.filter(p => p.data.tags.includes(tag)) } }));
+}
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+<Base title={`${tag} · Articles · OctobLab`} description={`Articles tagged ${tag}.`} canonical={new URL(`${BASE}articles/tag/${tag}/`, Astro.site).toString()}>
+  <div class="home">
+    <div class="home-wrap">
+      <SiteNav />
+      <section class="section listing">
+        <div class="eyebrow"><a href={`${BASE}articles/`}>Articles</a> · tag</div>
+        <h2>{tag}</h2>
+        <p class="sub">{posts.length === 1 ? 'One article' : `${posts.length} articles`} with this tag.</p>
+        <ArticleList posts={posts} />
+      </section>
+    </div>
+  </div>
+</Base>

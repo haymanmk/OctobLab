@@ -20,3 +20,19 @@ test('feed and sitemap exist under the base path', async ({ request }) => {
   const sm = await request.get('sitemap-index.xml');
   expect(sm.ok()).toBeTruthy();
 });
+
+test('the articles page lists every post with both ways to read it, and tag pages filter', async ({ page }) => {
+  await page.goto('articles/');
+  await expect(page.locator('h2')).toContainText('article');
+  const post = page.locator('.post').first();
+  await expect(post.locator('h3')).toHaveText('Nonlinear Disturbance Observer for Robot Control');
+  await expect(post.getByRole('link', { name: 'Open the board' })).toHaveAttribute('href', /posts\/ndob\/$/);
+  await expect(post.getByRole('link', { name: 'Read as a page' })).toHaveAttribute('href', /posts\/ndob\/read\/$/);
+  await page.locator('.tagrow a', { hasText: 'control' }).click();
+  await expect(page).toHaveURL(/articles\/tag\/control\/$/);
+  await expect(page.locator('h2')).toHaveText('control');
+  await expect(page.locator('.post')).toHaveCount(1);
+  await page.goto('');
+  await page.getByRole('navigation').getByRole('link', { name: 'Articles' }).click();
+  await expect(page).toHaveURL(/articles\/$/);
+});

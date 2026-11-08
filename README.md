@@ -59,4 +59,5 @@ Pushing to `main` builds, runs the test suite, and deploys to GitHub Pages.
 - `src/lib/cards.ts` – Markdown → card graph (the build step).
 - `src/app/` – the reading app: board (`@xyflow/react`), reader, sidebar, store (zustand) and persistence (Dexie over IndexedDB).
 - `src/pages/posts/[slug]/` – the board page and the plain reading page for each post.
+- `src/pages/articles/` – the list of all posts, and one page per tag.
 - `tests/` – end-to-end tests for desktop, phone and tablet input.

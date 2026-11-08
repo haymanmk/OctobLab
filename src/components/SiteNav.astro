@@ -1,0 +1,18 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { BASE, getPosts } from '../lib/posts';
+const first = (await getPosts())[0];
+---
+<header class="topnav">
+  <a class="brand" href={BASE} aria-label="Home">
+    <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="5" width="7" height="8" rx="1.5" fill="var(--accent)"/><rect x="14" y="1" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><rect x="14" y="11" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><path d="M8 9h3c1.5 0 1.5-5 3-5M8 9h3c1.5 0 1.5 5 3 5" fill="none" stroke="var(--fg)" stroke-width="1.2"/></svg>
+    OctobLab
+  </a>
+  <nav>
+    <a href={`${BASE}articles/`}>Articles</a>
+    <a href={`${BASE}#how`}>How it reads</a>
+    {first && <a href={`${BASE}posts/${first.id}/#notes`}>My notes</a>}
+    <a href={`${BASE}#about`}>About</a>
+  </nav>
+  <ThemeToggle />
+</header>

@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import SiteNav from '../../components/SiteNav.astro';
+import ArticleList from '../../components/ArticleList.astro';
+import { getPosts, BASE } from '../../lib/posts';
+const posts = await getPosts();
+const tags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
+const count = (t: string) => posts.filter(p => p.data.tags.includes(t)).length;
+---
+<Base title="Articles · OctobLab" description="Every article on OctobLab, newest first." canonical={new URL(`${BASE}articles/`, Astro.site).toString()}>
+  <div class="home">
+    <div class="home-wrap">
+      <SiteNav />
+      <section class="section listing" id="articles">
+        <div class="eyebrow">Articles</div>
+        <h2>{posts.length === 1 ? 'One article so far' : `${posts.length} articles`}</h2>
+        <p class="sub">Newest first. Each one opens as a board of cards, and also as a plain page.</p>
+        {tags.length > 0 && (
+          <div class="tagrow" aria-label="Tags">
+            {tags.map(t => <a class="tag" href={`${BASE}articles/tag/${t}/`}>{t}<span>{count(t)}</span></a>)}
+          </div>
+        )}
+        <ArticleList posts={posts} />
+        <p class="sub feedline">New articles also arrive in the <a href={`${BASE}rss.xml`}>feed</a>.</p>
+      </section>
+    </div>
+  </div>
+</Base>

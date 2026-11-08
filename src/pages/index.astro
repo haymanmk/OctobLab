@@ -1,29 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
 import HeroBoard from '../components/HeroBoard.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
-import { getPosts, articleOf, BASE } from '../lib/posts';
+import SiteNav from '../components/SiteNav.astro';
+import ArticleList from '../components/ArticleList.astro';
+import { getPosts, BASE } from '../lib/posts';
 const posts = await getPosts();
 const first = posts[0];
-const counts = await Promise.all(posts.map(async p => (await articleOf(p)).cards.length));
-const fmt = (d: Date) => d.toISOString().slice(0, 10);
 ---
 <Base title="OctobLab" canonical={new URL(BASE, Astro.site).toString()}>
   <div class="home">
     <div class="home-wrap">
-      <header class="topnav">
-        <a class="brand" href={BASE} aria-label="Home">
-          <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="5" width="7" height="8" rx="1.5" fill="var(--accent)"/><rect x="14" y="1" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><rect x="14" y="11" width="9" height="6" rx="1.5" fill="none" stroke="var(--fg)" stroke-width="1.4"/><path d="M8 9h3c1.5 0 1.5-5 3-5M8 9h3c1.5 0 1.5 5 3 5" fill="none" stroke="var(--fg)" stroke-width="1.2"/></svg>
-          OctobLab
-        </a>
-        <nav>
-          <a href="#articles">Articles</a>
-          <a href="#how">How it reads</a>
-          {first && <a href={`${BASE}posts/${first.id}/#notes`}>My notes</a>}
-          <a href="#about">About</a>
-        </nav>
-        <ThemeToggle />
-      </header>
+      <SiteNav />
 
       <section class="hero">
         <div>
@@ -42,15 +29,9 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10);
         <div class="eyebrow">Articles</div>
         <h2>Start with one deep topic</h2>
         <p class="sub">Niche first, broad later. Each article is written in Markdown and split into cards by its headings, so it also exists as a plain page for search engines and feed readers.</p>
+        <ArticleList posts={posts} />
+        <p class="sub"><a href={`${BASE}articles/`}>All articles and tags →</a></p>
         <div class="article-list">
-          {posts.map((p, i) => (
-            <a class="post" href={`${BASE}posts/${p.id}/`}>
-              <div class="meta"><span>{fmt(p.data.date)}</span><span>{counts[i]} cards</span>{p.data.tags.slice(0, 2).map(t => <span>{t}</span>)}</div>
-              <h3>{p.data.title}</h3>
-              <p>{p.data.description}</p>
-              <div class="links"><span>Board</span><span>·</span><span>Read as a page</span></div>
-            </a>
-          ))}
           <div class="post planned">
             <div class="meta"><span>Planned</span><span>Identification</span></div>
             <h3>Friction identification you can run in an afternoon</h3>
@@ -79,7 +60,7 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10);
         <div class="eyebrow">Entry points</div>
         <h2>Where to go</h2>
         <div class="entries">
-          <a class="entry" href="#articles"><b>Articles</b><span>Long-form topics, one board each.</span></a>
+          <a class="entry" href={`${BASE}articles/`}><b>Articles</b><span>Long-form topics, one board each.</span></a>
           {first && <a class="entry" href={`${BASE}posts/${first.id}/#notes`}><b>My notes</b><span>Your highlights and board notes, kept on this device.</span></a>}
           <a class="entry" href={`${BASE}rss.xml`}><b>Feed</b><span>RSS of new articles.</span></a>
           <a class="entry" href="#about"><b>About</b><span>Who writes this and why.</span></a>
