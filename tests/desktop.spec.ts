@@ -208,6 +208,23 @@ test.describe('board on a desktop', () => {
     await expect(page.locator(card('interactive-simulation') + ' .widget')).toHaveCount(0);
   });
 
+  test('the help box opens on the first visit, closes, stays closed, and returns from the ? button', async ({ page }) => {
+    await openBoard(page, '', { keepHelp: true });
+    await expect(page.getByTestId('helpbox')).toBeVisible();
+    await expect(page.getByTestId('helpbox')).toContainText('middle mouse button');
+    await page.getByRole('button', { name: 'Close help' }).click();
+    await expect(page.getByTestId('helpbox')).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('.react-flow__node-card')).toHaveCount(CARD_COUNT);
+    await expect(page.getByTestId('helpbox')).toHaveCount(0);
+    await page.getByRole('button', { name: 'How to use the board' }).click();
+    await expect(page.getByTestId('helpbox')).toBeVisible();
+    await page.getByRole('button', { name: 'Touch', exact: true }).click();
+    await expect(page.getByTestId('helpbox')).toContainText('Pinch');
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('helpbox')).toHaveCount(0);
+  });
+
   test('fold preview and reader controls', async ({ page }) => {
     await openBoard(page, '#the-nonlinear-dob');
     await page.getByTestId('fold-sim').click();

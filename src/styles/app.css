@@ -66,8 +66,12 @@
 .toolbar .seg { height: 30px; display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .05); }
 .toolbar .seg button { height: 28px; border: 0; border-radius: 0; box-shadow: none; padding: 0 10px; color: var(--muted); }
 .toolbar .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--fg); }
-.react-flow__panel.boardhint { pointer-events: none; font-size: 11.5px; color: var(--muted); font-family: var(--mono); background: var(--surface); padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; max-width: calc(100% - 110px); margin: 12px; }
-body:has(.toasts .toast) .boardhint { opacity: 0; }
+.helpbox { position: absolute; right: 60px; bottom: 44px; width: min(380px, calc(100% - 76px)); z-index: 6; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px 12px; font-size: 13.5px; line-height: 1.45; color: var(--fg); }
+.helpbox .help-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.helpbox ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.helpbox li b { font-weight: 600; }
+.helpbox .help-foot { margin-top: 8px; font-size: 12px; color: var(--muted); }
+.board .react-flow__controls-button .qmark { font-weight: 600; font-size: 15px; font-family: var(--sans); }
 
 /* ---------- cards ---------- */
 .card { position: relative; width: 280px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; font-size: 15px; }
@@ -173,7 +177,7 @@ body:has(.toasts .toast) .boardhint { opacity: 0; }
 .app[data-mode="phone"] .card { width: 250px; }
 .app[data-mode="phone"] .card.expanded { width: min(380px, calc(100vw - 32px)); }
 .app[data-mode="phone"] .reader-body { padding: 18px 16px 40px; }
-.app[data-mode="phone"] .boardhint { display: none; }
+.app[data-mode="phone"] .helpbox { left: 12px; right: 56px; width: auto; max-height: 70%; overflow: auto; }
 .app[data-mode="phone"] .react-flow__panel.toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .app[data-mode="phone"] .toolbar button, .app[data-mode="phone"] .toolbar .chip { padding: 0 8px; font-size: 12px; height: 28px; white-space: nowrap; flex: none; }
 .app[data-mode="square"] .reader-col { width: 46%; min-width: 300px; display: flex; }

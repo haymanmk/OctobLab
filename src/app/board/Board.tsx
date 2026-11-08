@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ReactFlow, ReactFlowProvider, Background, BackgroundVariant, Controls, Panel, applyNodeChanges, useReactFlow, type Edge, type NodeChange, type Connection, type FinalConnectionState } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Background, BackgroundVariant, Controls, ControlButton, Panel, applyNodeChanges, useReactFlow, type Edge, type NodeChange, type Connection, type FinalConnectionState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useStore, defaultInput, SOFT_LIMIT } from '../store';
 import { setBoardApi } from '../boardApi';
@@ -7,6 +7,8 @@ import { CardNode, type CardNodeType, type CardData } from './CardNode';
 import { NoteNode, type NoteNodeType } from './NoteNode';
 import type { Size } from '../types';
 import { clamp } from '../types';
+import { readPref, writePref } from '../prefs';
+import { HelpBox } from './Help';
 
 type AnyNode = CardNodeType | NoteNodeType;
 const nodeTypes = { card: CardNode, note: NoteNode };
@@ -39,6 +41,10 @@ function BoardInner() {
   const measured = useStore(s => s.measured);
   const [nodes, setNodes] = useState<AnyNode[]>([]);
   const [anim, setAnim] = useState(false);
+  /* the help box opens by itself on a reader's first visit, then only on request */
+  const [help, setHelp] = useState<boolean>(() => !readPref<boolean>('helpSeen', false));
+  const closeHelp = useCallback(() => { setHelp(false); writePref('helpSeen', true); }, []);
+  useEffect(() => { if (!help) return; const k = (e: KeyboardEvent) => { if (e.key === 'Escape') closeHelp(); }; document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k); }, [help, closeHelp]);
 
   /* nodes are derived from the store; React Flow's own measurements and selection are carried over */
   useEffect(() => {
@@ -145,7 +151,9 @@ function BoardInner() {
         deleteKeyCode={null} multiSelectionKeyCode={null} selectionKeyCode={null}
         proOptions={{ hideAttribution: false }}>
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} />
-        <Controls showInteractive={false} position="bottom-right" />
+        <Controls showInteractive={false} position="bottom-right">
+          <ControlButton onClick={() => (help ? closeHelp() : setHelp(true))} title="How to use the board" aria-label="How to use the board" aria-pressed={help}><span className="qmark">?</span></ControlButton>
+        </Controls>
         <Panel position="top-left" className="toolbar">
           <button type="button" onClick={() => rf.fitView({ ...FIT, duration: 300 })} title="Fit all cards in view">Fit</button>
           <button type="button" onClick={() => useStore.getState().tidy()} title="Re-run the tree layout with the current card sizes">Tidy</button>
@@ -157,11 +165,8 @@ function BoardInner() {
           </div>
           <span className={'chip' + (nExp > SOFT_LIMIT ? ' over' : '')} data-testid="chip">{nExp} expanded</span>
         </Panel>
-        <Panel position="bottom-left" className="boardhint">
-          {input === 'mouse' ? 'scroll to zoom · hold the middle button to pan · drag a card to move it · drag a card\u2019s dot to another card to connect · click an arrow to hide it'
-            : 'pinch or ctrl + scroll to zoom · drag the background to pan · drag a card’s title to move it · drag a card’s dot to another card to connect · tap an arrow to hide it'}
-        </Panel>
       </ReactFlow>
+      {help && <HelpBox input={input} onClose={closeHelp} />}
     </div>
   );
 }

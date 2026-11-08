@@ -3,11 +3,12 @@ import { expect, type Page } from '@playwright/test';
 export const BOARD = 'posts/ndob/';
 export const CARD_COUNT = 10;
 
-export async function openBoard(page: Page, hash = '') {
+export async function openBoard(page: Page, hash = '', { keepHelp = false } = {}) {
   await page.goto(BOARD + hash);
   await expect(page.getByTestId('board')).toBeVisible();
   await expect(page.locator('.react-flow__node-card')).toHaveCount(CARD_COUNT);
   await expect(page.locator('.react-flow__node-card').first()).toBeVisible();
+  if (!keepHelp) { const close = page.getByRole('button', { name: 'Close help' }); if (await close.count()) await close.click(); }
   await page.waitForTimeout(400);
 }
 

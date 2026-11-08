@@ -57,7 +57,7 @@ const bgPoint = page => page.evaluate(() => { const pane = document.querySelecto
 
 async function session(browser, base, hash) {
   const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: SCALE, colorScheme: 'light' });
-  await ctx.addInitScript(() => { localStorage.setItem('octoblab.theme', '"light"'); localStorage.setItem('octoblab.readerW', '380'); localStorage.setItem('octoblab.input', '"mouse"'); });
+  await ctx.addInitScript(() => { localStorage.setItem('octoblab.theme', '"light"'); localStorage.setItem('octoblab.readerW', '380'); localStorage.setItem('octoblab.input', '"mouse"'); localStorage.setItem('octoblab.helpSeen', 'true'); });
   const page = await ctx.newPage();
   await page.goto(base + 'posts/ndob/' + hash);
   await page.locator('.react-flow__node-card').nth(9).waitFor();
