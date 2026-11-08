@@ -71,7 +71,13 @@
 .helpbox ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
 .helpbox li b { font-weight: 600; }
 .helpbox .help-foot { margin-top: 8px; font-size: 12px; color: var(--muted); }
-.board .react-flow__controls-button .qmark { font-weight: 600; font-size: 15px; font-family: var(--sans); }
+.board .react-flow__controls-button .help-ico { width: 14px; height: 14px; max-width: 14px; max-height: 14px; }
+/* the box grows out of the ? button and shrinks back into it */
+.helpbox { transform-origin: calc(100% + 40px) calc(100% - 14px); animation: help-in .24s cubic-bezier(.2, .7, .2, 1) both; }
+.helpbox.closing { animation: help-out .18s ease-in both; pointer-events: none; }
+@keyframes help-in { from { opacity: 0; transform: scale(.15); } to { opacity: 1; transform: scale(1); } }
+@keyframes help-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.15); } }
+@media (prefers-reduced-motion: reduce) { .helpbox, .helpbox.closing { animation: none; } }
 
 /* ---------- cards ---------- */
 .card { position: relative; width: 280px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; font-size: 15px; }

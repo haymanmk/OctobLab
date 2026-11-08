@@ -8,7 +8,7 @@ import { NoteNode, type NoteNodeType } from './NoteNode';
 import type { Size } from '../types';
 import { clamp } from '../types';
 import { readPref, writePref } from '../prefs';
-import { HelpBox } from './Help';
+import { HelpBox, IconHelp } from './Help';
 
 type AnyNode = CardNodeType | NoteNodeType;
 const nodeTypes = { card: CardNode, note: NoteNode };
@@ -42,8 +42,13 @@ function BoardInner() {
   const [nodes, setNodes] = useState<AnyNode[]>([]);
   const [anim, setAnim] = useState(false);
   /* the help box opens by itself on a reader's first visit, then only on request */
-  const [help, setHelp] = useState<boolean>(() => !readPref<boolean>('helpSeen', false));
-  const closeHelp = useCallback(() => { setHelp(false); writePref('helpSeen', true); }, []);
+  const [helpState, setHelpState] = useState<'open' | 'closing' | 'closed'>(() => (readPref<boolean>('helpSeen', false) ? 'closed' : 'open'));
+  const help = helpState === 'open';
+  const closeHelp = useCallback(() => {
+    writePref('helpSeen', true);
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setHelpState('closed'); return; }
+    setHelpState('closing'); setTimeout(() => setHelpState(s => (s === 'closing' ? 'closed' : s)), 400);
+  }, []);
   useEffect(() => { if (!help) return; const k = (e: KeyboardEvent) => { if (e.key === 'Escape') closeHelp(); }; document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k); }, [help, closeHelp]);
 
   /* nodes are derived from the store; React Flow's own measurements and selection are carried over */
@@ -152,7 +157,7 @@ function BoardInner() {
         proOptions={{ hideAttribution: false }}>
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} />
         <Controls showInteractive={false} position="bottom-right">
-          <ControlButton onClick={() => (help ? closeHelp() : setHelp(true))} title="How to use the board" aria-label="How to use the board" aria-pressed={help}><span className="qmark">?</span></ControlButton>
+          <ControlButton onClick={() => (help ? closeHelp() : setHelpState('open'))} title="How to use the board" aria-label="How to use the board" aria-pressed={help}><IconHelp /></ControlButton>
         </Controls>
         <Panel position="top-left" className="toolbar">
           <button type="button" onClick={() => rf.fitView({ ...FIT, duration: 300 })} title="Fit all cards in view">Fit</button>
@@ -166,7 +171,7 @@ function BoardInner() {
           <span className={'chip' + (nExp > SOFT_LIMIT ? ' over' : '')} data-testid="chip">{nExp} expanded</span>
         </Panel>
       </ReactFlow>
-      {help && <HelpBox input={input} onClose={closeHelp} />}
+      {helpState !== 'closed' && <HelpBox input={input} onClose={closeHelp} closing={helpState === 'closing'} onDone={() => setHelpState('closed')} />}
     </div>
   );
 }
