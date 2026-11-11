@@ -35,7 +35,7 @@ A DOB splits the problem in two. A feedback controller handles the nominal plant
 
 ## The linear DOB in one picture
 
-<!-- summary: Invert the nominal plant, low-pass the result with Q(s), and subtract. The bandwidth of Q sets the trade between tracking speed and noise. -->
+<!-- summary: Invert the nominal plant, low-pass the result with $Q(s)$, and subtract. The bandwidth of $Q$ sets the trade between tracking speed and noise. -->
 
 The classical observer compares what the plant did with what the nominal model $P_n(s)$ predicts for the same torque:
 
@@ -72,13 +72,13 @@ For a single joint with constant inertia this collapses to $p = L J \dot q$ and 
 ## Choosing the observer gain
 
 <!-- split: h3 -->
-<!-- summary: L sets the error pole. Three questions decide it: how much noise you can afford, how fast the disturbance really moves, and where the estimate enters the loop. -->
+<!-- summary: $L$ sets the error pole. Three questions decide it: how much noise you can afford, how fast the disturbance really moves, and where the estimate enters the loop. -->
 
 Everything about tuning hides in one scalar (or one matrix) $L$. It is the pole of the estimation error, so it is tempting to make it large. The three cards under this one explain why you cannot, and how to pick it anyway.
 
 ### Bandwidth versus noise
 
-<!-- summary: Velocity noise reaches the estimate scaled by L·J, unfiltered. Raise L until the torque command starts to chatter, then back off. -->
+<!-- summary: Velocity noise reaches the estimate scaled by $L J$, unfiltered. Raise $L$ until the torque command starts to chatter, then back off. -->
 
 The estimate is $\hat d = z + L J \dot q_m$, where $\dot q_m$ is the *measured* velocity. A noise component $n$ in the velocity therefore appears in $\hat d$ as $L J\, n$, directly and without filtering. Doubling $L$ doubles the noise that reaches the torque command.
 
@@ -86,7 +86,7 @@ A practical procedure on hardware: start with $L$ well below the velocity-loop b
 
 ### What “slowly varying” costs
 
-<!-- summary: For a disturbance at frequency ω the steady-state error ratio is ω / √(ω² + L²). Fast disturbances need a bigger L or a different observer. -->
+<!-- summary: For a disturbance at frequency $\omega$ the steady-state error ratio is $\omega / \sqrt{\omega^2 + L^2}$. Fast disturbances need a bigger $L$ or a different observer. -->
 
 The convergence proof assumes $\dot d \approx 0$. Real disturbances move. For a sinusoidal component at frequency $\omega$, the error dynamics $\dot e = \dot d - L e$ give a steady-state magnitude ratio
 
@@ -97,7 +97,7 @@ At $\omega = L$ the observer still misses about 71% of that component. To track 
 
 ### Where the estimate enters the loop
 
-<!-- summary: Subtract d̂ from the nominal controller output. The plant then sees only the estimation error, and the controller can be tuned on the nominal model alone. -->
+<!-- summary: Subtract $\hat d$ from the nominal controller output. The plant then sees only the estimation error, and the controller can be tuned on the nominal model alone. -->
 
 With a nominal controller output $u$, command
 
@@ -110,7 +110,7 @@ Keep $\hat d$ out of the model-based terms, though. Feeding it into the $M(q)$ o
 
 ## Implementation on a real joint
 
-<!-- summary: Discretise z with forward Euler, keep T·L small, saturate d̂ to what the actuator can cancel, and freeze z when the torque saturates. -->
+<!-- summary: Discretise $z$ with forward Euler, keep $T L$ small, saturate $\hat d$ to what the actuator can cancel, and freeze $z$ when the torque saturates. -->
 
 The observer is one first-order filter per joint, so it is cheap. The details that bite:
 

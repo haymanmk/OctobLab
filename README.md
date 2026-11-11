@@ -21,7 +21,26 @@ split: h2        # default depth that becomes a card
 Inside the body:
 
 - `<!-- split: h3 -->` under a heading turns that section's H3s into cards of their own.
-- `<!-- summary: … -->` sets the text a collapsed card shows. Without it, the first paragraph is used.
+- What a collapsed card shows is the author's choice. In order of priority:
+  1. `<!-- preview -->` … `<!-- /preview -->` around any blocks of the section. Those blocks stay in the body and are also shown on the collapsed card, so you can put the key formula, list or table on the card. Several preview regions in one section are joined.
+  2. `<!-- summary: … -->` with a short text written for the card. It is Markdown, so `$…$` math, emphasis, code and links render as they do in the body.
+  3. Neither: the opening of the first paragraph, as plain text.
+
+  ```markdown
+  ## Step 4: solve it with one formula
+
+  Text that only appears in the body.
+
+  <!-- preview -->
+
+  $$
+  y \ge \tfrac12\zeta + \beta\,\sigma_2
+  $$
+
+  This formula and this sentence are what the collapsed card shows.
+
+  <!-- /preview -->
+  ```
 - A fenced block with the language `widget` places an interactive widget. On GitHub it renders as code.
 
   ````markdown

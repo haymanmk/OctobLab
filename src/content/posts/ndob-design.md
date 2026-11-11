@@ -47,7 +47,7 @@ The older observers are special cases of the new one, and so is the classical li
 
 ## Step 1: lump everything into one disturbance
 
-<!-- summary: Write the true dynamics, subtract the model you trust, and call the rest τ_d. The model's inertia matrix only has to be symmetric, positive definite, bounded, and bounded in its rate of change. -->
+<!-- summary: Write the true dynamics, subtract the model you trust, and call the rest $\tau_d$. The model's inertia matrix $\hat M$ only has to be symmetric, positive definite, bounded, and bounded in its rate of change. -->
 
 The true arm obeys
 
@@ -70,7 +70,7 @@ Those two constants, $\sigma_2$ and $\zeta$, are the first two inputs of the des
 
 ## Step 2: the observer, without acceleration
 
-<!-- summary: Keep Chen's structure, and choose L = Y M̂⁻¹ with a constant matrix Y. Then p is simply Y q̇, for every robot. The design problem shrinks to choosing Y. -->
+<!-- summary: Keep Chen's structure, and choose $L = Y\hat M^{-1}$ with a constant matrix $Y$. Then $p$ is simply $Y\dot q$, for every robot. The design problem shrinks to choosing $Y$. -->
 
 The observer has an internal state $z$ and an output $\hat\tau_d$:
 
@@ -93,7 +93,7 @@ The inertia matrix now appears inside the gain. A heavy configuration gets a sma
 
 ## Step 3: one inequality decides stability
 
-<!-- summary: With the Lyapunov function (XΔτ)ᵀ M̂ (XΔτ), the error decays exponentially if X + Xᵀ − Xᵀ (dM̂/dt) X ≥ Γ. The rate is λmin(Γ) / (2 σ₂ ‖X‖²). -->
+<!-- summary: With the Lyapunov function $(X\Delta\tau_d)^T \hat M (X\Delta\tau_d)$, the error decays exponentially if $X + X^T - X^T \dot{\hat M} X \ge \Gamma$. The rate is $\lambda_{min}(\Gamma) / (2\sigma_2\lVert X\rVert^2)$. -->
 
 Because $L$ changes with $q$, positive eigenvalues at each instant are not a proof. The paper uses the Lyapunov function
 
@@ -121,8 +121,6 @@ So designing the observer means finding a constant matrix that satisfies one ine
 
 ## Step 4: solve it with one formula
 
-<!-- summary: Choose Y = yI and a minimum rate β. The inequality becomes y ≥ ζ/2 + β σ₂. Take equality, because a larger y only adds noise. An LMI covers the general case. -->
-
 Multiply the inequality by $Y^T$ and $Y$ and replace $\dot{\hat M}$ by its bound $\zeta I$. The result, $Y + Y^T - \zeta I - Y^T\Gamma Y \ge 0$, is a linear matrix inequality after a Schur complement:
 
 $$
@@ -130,19 +128,29 @@ $$
 $$
 An LMI solver can search for $Y$, and you can add $Y \le \nu I$ to cap the gain. For most arms you do not need the solver. Take $Y = yI$ and ask for a minimum rate $\beta$. Then $\Gamma = \gamma I$ with $\gamma = 2\beta\sigma_2/y^2$, and the LMI collapses to a scalar condition:
 
+<!-- preview -->
+
 $$
 y \ge \tfrac12\zeta + \beta\,\sigma_2
 $$
+
+<!-- /preview -->
+
 Larger $y$ means more sensor noise in the estimate (next cards), so take equality:
 
 $$
 Y = \left(\tfrac12\zeta + \beta\,\sigma_2\right) I, \qquad L(q) = Y\hat M^{-1}(q), \qquad p = Y\dot q
 $$
+
+<!-- preview -->
+
 That is the whole design. The three inputs are $\sigma_2$ (how heavy the arm can be), $\zeta$ (how fast its inertia can change) and $\beta$ (how fast you want the estimate).
+
+<!-- /preview -->
 
 ## The recipe on our arm
 
-<!-- summary: For the two-joint geared arm: σ₂ = 1.36 kg·m², ζ = 0.48 at 1.5 rad/s, and β = 20 rad/s give y = 27.5. The error poles then lie between 20 and 83 rad/s. -->
+<!-- summary: For the two-joint geared arm: $\sigma_2 = 1.36\ \mathrm{kg\,m^2}$, $\zeta = 0.48$ at 1.5 rad/s, and $\beta = 20$ rad/s give $y = 27.5$. The error poles then lie between 20 and 83 rad/s. -->
 
 The simulated arm has two geared revolute joints in a vertical plane. With $c_2 = \cos q_2$, its inertia matrix is
 
@@ -162,7 +170,7 @@ The same four steps reproduce the paper's SCARA example: $\sigma_2 = 15$, $\zeta
 
 ## Slow and fast: which of the three problems it fixes
 
-<!-- summary: A disturbance that changes at rate κ leaves an error of about κ/β. The gravity offset is slow and vanishes. The friction flip is a step and decays at rate β. Cogging at speed is far too fast and stays. -->
+<!-- summary: A disturbance that changes at rate $\kappa$ leaves an error of about $\kappa/\beta$. The gravity offset is slow and vanishes. The friction flip is a step and decays at rate $\beta$. Cogging at speed is far too fast and stays. -->
 
 Theorem 1 assumes $\dot\tau_d \approx 0$. Theorem 2 of the paper drops that: if $\lVert\dot\tau_d\rVert \le \kappa$, the error converges exponentially into a ball. With $Y = yI$ designed as above, its radius simplifies to
 
@@ -179,7 +187,7 @@ Cogging in motion needs a different tool: a position-indexed table or a harmonic
 
 ## Implementation notes
 
-<!-- summary: Velocity noise reaches the estimate scaled by y. Integrate z with backward Euler. Keep y below 2 λmin(M)/T, or the sampled loop goes unstable. Start z at −p. -->
+<!-- summary: Velocity noise reaches the estimate scaled by $y$. Integrate $z$ with backward Euler. Keep $y$ below $2\lambda_{min}(M)/T$, or the sampled loop goes unstable. Start $z$ at $-p$. -->
 
 - **Noise.** $\hat\tau_d = z + y\,\dot q_m$, so velocity noise of standard deviation $\sigma$ appears in the torque with about $y\,\sigma$. In the simulation, $\sigma = 0.005$ rad/s gives 0.15 N·m at $\beta = 20$ and 0.70 N·m at $\beta = 100$. This is the cost side of $\beta$.
 - **Integrating $z$.** Forward Euler needs $T\,y/\lambda_{min}(\hat M) < 2$. Backward Euler has no such limit and costs one linear solve: $(\hat M + T y I)\,z_{k+1} = \hat M z_k + T y\,(\hat N - \tau - p)$.

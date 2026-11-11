@@ -94,7 +94,10 @@
 .card-head .tog:hover { background: var(--surface-2); color: var(--fg); }
 .card-head .tog .ico { width: 15px; height: 15px; }
 .card-body { padding: 4px 12px 10px; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
-.card-body .sum { margin: 0; }
+.card-body .sum { margin: 0; max-height: 300px; overflow: hidden; }
+.card-body .sum .katex-display { margin: .5em 0; }
+.card-body .sum > :last-child { margin-bottom: 0; }
+.card-body .sum table { font-size: .9em; }
 .card.expanded .card-body { color: var(--fg); font-family: var(--serif); font-size: 14.5px; line-height: 1.55; max-height: 460px; overflow: auto; user-select: text; -webkit-user-select: text; cursor: auto; touch-action: pan-y; padding-top: 10px; }
 .card-body p { margin: 0 0 .75em; }
 .card-body p:last-child { margin-bottom: 0; }

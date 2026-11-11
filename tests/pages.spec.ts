@@ -28,6 +28,22 @@ test('the design article renders its math and tables, and its simulation runs an
   await expect(w.getByRole('button', { name: 'Joint 2' })).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('collapsed cards render their summary as Markdown, and a preview block shows the chosen parts of the body', async ({ page }) => {
+  await page.goto('posts/ndob-design/');
+  const sum = (id: string) => page.locator(`.react-flow__node-card[data-id="${id}"] .sum`);
+  // <!-- summary: … --> with inline math
+  await expect(sum('step-1-lump-everything-into-one-disturbance').locator('.katex')).toHaveCount(2);
+  await expect(sum('step-1-lump-everything-into-one-disturbance')).not.toContainText('$');
+  // <!-- preview --> regions: the display formula and the closing paragraph, joined
+  const chosen = sum('step-4-solve-it-with-one-formula');
+  await expect(chosen.locator('.katex-display')).toHaveCount(1);
+  await expect(chosen).toContainText('That is the whole design.');
+  await expect(chosen).not.toContainText('Schur');
+  // neither: the opening of the first paragraph, as plain text
+  await page.goto('posts/ndob/');
+  await expect(page.locator('.react-flow__node-card[data-id="root"] .sum')).toContainText('disturbance observer');
+});
+
 test('feed and sitemap exist under the base path', async ({ request }) => {
   const rss = await request.get('rss.xml');
   expect(rss.ok()).toBeTruthy();

@@ -21,7 +21,7 @@ export function CardNode({ id, data }: NodeProps<CardNodeType>) {
           onClick={e => { e.stopPropagation(); useStore.getState().toggleExpand(id); }}>{expanded ? <IconCollapse /> : <IconExpand />}</button>
       </div>
       <div className={'card-body' + (expanded ? ' nowheel nodrag' : '')}>
-        {expanded ? <CardHtml html={card.html} /> : <><p className="sum">{card.summary}</p>{card.widgets.length > 0 && <Poster />}</>}
+        {expanded ? <CardHtml html={card.html} /> : <><div className="sum"><CardHtml html={card.summaryHtml} /></div>{card.widgets.length > 0 && <Poster />}</>}
       </div>
       <div className="card-foot">
         <button type="button" className="read nodrag" onClick={e => { e.stopPropagation(); useStore.getState().select(id, { open: true }); }}>Read</button>
