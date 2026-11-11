@@ -6,7 +6,8 @@ import ArticleList from '../components/ArticleList.astro';
 import DemoStage from '../components/DemoStage.astro';
 import { getPosts, BASE } from '../lib/posts';
 const posts = await getPosts();
-const first = posts[0];
+// The oldest post is the introduction the later ones build on, so it is the one the home page opens.
+const first = posts[posts.length - 1];
 ---
 <Base title="OctobLab" canonical={new URL(BASE, Astro.site).toString()}>
   <div class="home">

@@ -11,6 +11,23 @@ test('the reading page carries the whole article with math, code and the live wi
   await expect(page).toHaveURL(/posts\/ndob\/$/);
 });
 
+test('the design article renders its math and tables, and its simulation runs and responds', async ({ page }) => {
+  await page.goto('posts/ndob-design/read/');
+  await expect(page.locator('h1')).toHaveText('Designing a Nonlinear Disturbance Observer, Step by Step');
+  await expect(page.locator('.katex-error')).toHaveCount(0);
+  await expect(page.locator('article table')).toHaveCount(2);
+  const w = page.locator('.widget');
+  await w.scrollIntoViewIfNeeded();
+  await expect(w.locator('.st')).toHaveText('● live');
+  const snap = () => w.locator('canvas').evaluate(c => (c as HTMLCanvasElement).toDataURL().slice(-80));
+  const a = await snap(); await page.waitForTimeout(400); expect(await snap()).not.toBe(a);
+  await expect(w.locator('.readout')).toContainText('27.5');
+  await w.getByLabel(/Convergence rate/).fill('50');
+  await expect(w.locator('.readout')).toContainText('68.3');
+  await w.getByRole('button', { name: 'Joint 2' }).click();
+  await expect(w.getByRole('button', { name: 'Joint 2' })).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('feed and sitemap exist under the base path', async ({ request }) => {
   const rss = await request.get('rss.xml');
   expect(rss.ok()).toBeTruthy();
@@ -24,14 +41,16 @@ test('feed and sitemap exist under the base path', async ({ request }) => {
 test('the articles page lists every post with both ways to read it, and tag pages filter', async ({ page }) => {
   await page.goto('articles/');
   await expect(page.locator('h2')).toContainText('article');
-  const post = page.locator('.post').first();
+  await expect(page.locator('.post')).toHaveCount(2);
+  await expect(page.locator('.post').first().locator('h3')).toHaveText('Designing a Nonlinear Disturbance Observer, Step by Step');
+  const post = page.locator('.post', { hasText: 'Nonlinear Disturbance Observer for Robot Control' });
   await expect(post.locator('h3')).toHaveText('Nonlinear Disturbance Observer for Robot Control');
   await expect(post.getByRole('link', { name: 'Open the board' })).toHaveAttribute('href', /posts\/ndob\/$/);
   await expect(post.getByRole('link', { name: 'Read as a page' })).toHaveAttribute('href', /posts\/ndob\/read\/$/);
   await page.locator('.tagrow a', { hasText: 'control' }).click();
   await expect(page).toHaveURL(/articles\/tag\/control\/$/);
   await expect(page.locator('h2')).toHaveText('control');
-  await expect(page.locator('.post')).toHaveCount(1);
+  await expect(page.locator('.post')).toHaveCount(2);
   await page.goto('');
   await page.getByRole('navigation').getByRole('link', { name: 'Articles' }).click();
   await expect(page).toHaveURL(/articles\/$/);

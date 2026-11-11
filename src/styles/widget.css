@@ -1,6 +1,13 @@
 .widget-host { margin: 12px 0; }
 .widget { font-family: var(--sans); border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 10px; user-select: none; -webkit-user-select: none; color: var(--fg); }
 .widget canvas { width: 100%; height: 240px; display: block; border-radius: 4px; background: var(--surface); }
+.widget canvas.tall { height: 300px; }
+.widget .wb button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.widget .readout { margin: 8px 0 0; display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.widget .readout div { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.widget .readout dt, .widget .readout dd { margin: 0; }
+.widget .readout dd { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.widget .readout b { font-weight: 500; color: var(--fg); }
 .widget .wtitle { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-family: var(--mono); color: var(--muted); margin-bottom: 8px; flex-wrap: wrap; }
 .widget .wtitle .st { color: var(--ok); }
 .widget .wtitle .st.off { color: var(--muted); }
