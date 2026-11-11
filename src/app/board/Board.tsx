@@ -122,10 +122,15 @@ function BoardInner() {
     return () => setBoardApi(null);
   }, [rf]);
 
-  const onNodeClick = useCallback((e: React.MouseEvent, node: AnyNode) => {
+  // A card opens in the reader on a double-click with a mouse, and on a single tap with a finger or a pen,
+  // where a double tap is awkward and a single one cannot be mistaken for the start of a mouse drag.
+  const openCard = useCallback((e: React.MouseEvent, node: AnyNode) => {
     const t = e.target as Element; if (t.closest('button, input, a, textarea, select')) return;
     if (node.type === 'card') { if ((node.data as CardData).expanded && t.closest('.card-body')) return; useStore.getState().select(node.id, { open: true }); }
   }, []);
+  const onNodeClick = useCallback((e: React.MouseEvent, node: AnyNode) => {
+    const pt = (e.nativeEvent as PointerEvent).pointerType; if (pt === 'touch' || pt === 'pen') openCard(e, node);
+  }, [openCard]);
   const onNodeDragStop = useCallback((_e: unknown, node: AnyNode) => useStore.getState().setPosition(node.id, node.position), []);
   const onConnect = useCallback((c: Connection) => { if (c.source && c.target) useStore.getState().addUserEdge(c.source, c.target); }, []);
   /* dropping the connection anywhere on a card counts, not only on its small target handle */
@@ -150,7 +155,7 @@ function BoardInner() {
       </defs></svg>
       <ReactFlow<AnyNode, Edge>
         nodes={nodes} edges={edges} nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange} onNodeClick={onNodeClick} onNodeDragStop={onNodeDragStop} onConnect={onConnect} onConnectEnd={onConnectEnd} onEdgeClick={onEdgeClick}
+        onNodesChange={onNodesChange} onNodeClick={onNodeClick} onNodeDoubleClick={openCard} onNodeDragStop={onNodeDragStop} onConnect={onConnect} onConnectEnd={onConnectEnd} onEdgeClick={onEdgeClick}
         minZoom={0.2} maxZoom={2.5} nodeDragThreshold={3} zoomOnDoubleClick={false} selectionOnDrag={false} panOnDrag={input === 'mouse' ? [1] : true} zoomOnPinch
         zoomOnScroll={input === 'mouse'} panOnScroll={input === 'touch'} connectionRadius={60} elevateNodesOnSelect
         deleteKeyCode={null} multiSelectionKeyCode={null} selectionKeyCode={null}

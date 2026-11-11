@@ -15,7 +15,7 @@ export function HelpBox({ input, onClose, closing = false, onDone }: { input: In
         <li><b>{mouse ? 'Hold the middle mouse button' : 'Drag the background'}</b> to pan{mouse ? ', from anywhere on the board.' : '.'}</li>
         <li><b>{mouse ? 'Drag a card' : 'Drag a card’s title'}</b> to move it. Cards you have not moved make room by themselves when one expands.</li>
         <li><b>Drag the dot</b> on a card’s right edge onto another card to connect them. {mouse ? 'Click' : 'Tap'} an arrow to hide it.</li>
-        <li><b>The corner arrows</b> expand a card in place. <b>Read</b> opens it in the reader.</li>
+        <li><b>The corner arrows</b> expand a card in place. <b>Double-click a card</b> to open it in the reader; on a touch screen, tap it.</li>
         <li><b>Select text in the reader</b> to highlight it, then drag the highlight onto the board to make a note card.</li>
         <li>Your layout, highlights and notes stay in this browser. <b>Reset board</b> restores the author’s layout.</li>
       </ul>

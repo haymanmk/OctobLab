@@ -24,9 +24,13 @@ test.describe('board on a desktop', () => {
     expect(Number(child.x)).toBeGreaterThan(Number(root.x));
   });
 
-  test('clicking a card opens it in the reader and updates the address', async ({ page }) => {
+  test('double-clicking a card opens it in the reader and updates the address; a single click does not', async ({ page }) => {
     await openBoard(page);
     await page.locator(card('the-nonlinear-dob') + ' .card-head h3').click();
+    await page.waitForTimeout(350);
+    await expect(page.locator(card('the-nonlinear-dob') + ' .card')).not.toHaveClass(/selected/);
+    await expect(page.locator(card('the-nonlinear-dob') + ' .read')).toHaveCount(0);
+    await page.locator(card('the-nonlinear-dob') + ' .card-head h3').dblclick();
     await expect(page.getByTestId('reader-title')).toHaveText('The nonlinear DOB');
     await expect(page.locator(card('the-nonlinear-dob') + ' .card')).toHaveClass(/selected/);
     expect(await page.evaluate(() => location.hash)).toBe('#the-nonlinear-dob');

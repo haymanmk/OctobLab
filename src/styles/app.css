@@ -105,8 +105,6 @@
 .card-body li { margin-bottom: .35em; }
 .card-body pre.shiki { font-size: 12px; }
 .card-foot { display: flex; gap: 6px; padding: 0 10px 10px 12px; align-items: center; }
-.card-foot .read { font-size: 12.5px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); }
-.card-foot .read:hover { color: var(--fg); border-color: var(--accent); }
 .card-foot .kids { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; }
 .card .react-flow__handle.port { width: 16px; height: 16px; right: -8px; border: 2px solid var(--edge); background: var(--surface); opacity: .6; transition: opacity .15s, transform .15s; }
 .card:hover .react-flow__handle.port, .card.selected .react-flow__handle.port { opacity: 1; }

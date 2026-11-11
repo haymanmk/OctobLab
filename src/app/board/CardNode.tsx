@@ -23,10 +23,7 @@ export function CardNode({ id, data }: NodeProps<CardNodeType>) {
       <div className={'card-body' + (expanded ? ' nowheel nodrag' : '')}>
         {expanded ? <CardHtml html={card.html} /> : <><div className="sum"><CardHtml html={card.summaryHtml} /></div>{card.widgets.length > 0 && <Poster />}</>}
       </div>
-      <div className="card-foot">
-        <button type="button" className="read nodrag" onClick={e => { e.stopPropagation(); useStore.getState().select(id, { open: true }); }}>Read</button>
-        <span className="kids">{kids ? `${kids} sub-card${kids > 1 ? 's' : ''}` : ''}</span>
-      </div>
+      {kids > 0 && <div className="card-foot"><span className="kids">{kids} sub-card{kids > 1 ? 's' : ''}</span></div>}
       <Handle type="source" position={Position.Right} className="port" title="Drag to another card to connect" />
     </article>
   );
