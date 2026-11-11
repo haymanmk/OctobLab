@@ -11,7 +11,6 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10);
       <div class="meta"><span>{fmt(p.data.date)}</span><span>{counts[i]} cards</span>{p.data.tags.map(t => <a href={`${BASE}articles/tag/${t}/`}>{t}</a>)}</div>
       <h3><a href={`${BASE}posts/${p.id}/`}>{p.data.title}</a></h3>
       <p>{p.data.description}</p>
-      <div class="links"><a href={`${BASE}posts/${p.id}/`}>Open the board</a><span>·</span><a href={`${BASE}posts/${p.id}/read/`}>Read as a page</a></div>
     </article>
   ))}
 </div>

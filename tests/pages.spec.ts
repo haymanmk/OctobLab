@@ -54,15 +54,16 @@ test('feed and sitemap exist under the base path', async ({ request }) => {
   expect(sm.ok()).toBeTruthy();
 });
 
-test('the articles page lists every post with both ways to read it, and tag pages filter', async ({ page }) => {
+test('the articles page lists every post, the title opens its board, and tag pages filter', async ({ page }) => {
   await page.goto('articles/');
   await expect(page.locator('h2')).toContainText('article');
   await expect(page.locator('.post')).toHaveCount(2);
   await expect(page.locator('.post').first().locator('h3')).toHaveText('Designing a Nonlinear Disturbance Observer, Step by Step');
   const post = page.locator('.post', { hasText: 'Nonlinear Disturbance Observer for Robot Control' });
   await expect(post.locator('h3')).toHaveText('Nonlinear Disturbance Observer for Robot Control');
-  await expect(post.getByRole('link', { name: 'Open the board' })).toHaveAttribute('href', /posts\/ndob\/$/);
-  await expect(post.getByRole('link', { name: 'Read as a page' })).toHaveAttribute('href', /posts\/ndob\/read\/$/);
+  // the title is the one way in; the board itself offers "Read as a page"
+  await expect(post.locator('h3 a')).toHaveAttribute('href', /posts\/ndob\/$/);
+  await expect(post.getByRole('link', { name: 'Read as a page' })).toHaveCount(0);
   await page.locator('.tagrow a', { hasText: 'control' }).click();
   await expect(page).toHaveURL(/articles\/tag\/control\/$/);
   await expect(page.locator('h2')).toHaveText('control');
