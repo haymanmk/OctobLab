@@ -67,6 +67,10 @@ test('the articles page lists every post with both ways to read it, and tag page
   await expect(page).toHaveURL(/articles\/tag\/control\/$/);
   await expect(page.locator('h2')).toHaveText('control');
   await expect(page.locator('.post')).toHaveCount(2);
+  // the back arrow on a board returns to this list, not to the home page
+  await page.goto('posts/ndob/');
+  await page.getByRole('link', { name: 'All articles' }).click();
+  await expect(page).toHaveURL(/articles\/$/);
   await page.goto('');
   await page.getByRole('navigation').getByRole('link', { name: 'Articles' }).click();
   await expect(page).toHaveURL(/articles\/$/);

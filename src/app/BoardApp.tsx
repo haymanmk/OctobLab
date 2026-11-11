@@ -42,7 +42,7 @@ export default function BoardApp({ article, base }: { article: ArticleGraph; bas
   return (
     <div className={cls} data-mode={mode} data-mtab={mtab} data-input={input ?? defaultInput()} style={{ ['--reader-w' as string]: clamp(readerW, 320, 900) + 'px' }} data-testid="app">
       <div className="appbar">
-        <a className="iconbtn" href={base} title="Home" aria-label="Home"><IconBack /></a>
+        <a className="iconbtn" href={base + 'articles/'} title="All articles" aria-label="All articles"><IconBack /></a>
         <button type="button" className="iconbtn" onClick={() => useStore.getState().setSidebarOpen(!sidebarOpen)} title="Contents and notes" aria-label="Toggle contents" data-testid="sb-toggle"><IconMenu /></button>
         <div className="title">{article.title}</div>
         <a className="textbtn desk" href={readHref} title="Read the same cards as one page">Read as a page</a>
