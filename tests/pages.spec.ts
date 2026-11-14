@@ -28,6 +28,24 @@ test('the design article renders its math and tables, and its simulation runs an
   await expect(w.getByRole('button', { name: 'Joint 2' })).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('the diffusion article renders, and its reverse-step demo turns normal as the step size shrinks', async ({ page }) => {
+  await page.goto('posts/diffusion-small-steps/read/');
+  await expect(page.locator('h1')).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+  await expect(page.locator('.katex-error')).toHaveCount(0);
+  await expect(page.locator('article table')).toHaveCount(2);
+  const w = page.locator('.widget');
+  await expect(w.locator('canvas')).toBeVisible();
+  await w.scrollIntoViewIfNeeded();
+  await expect(w.locator('.readout')).toContainText('17.9 %');
+  const snap = () => w.locator('canvas').evaluate(c => (c as HTMLCanvasElement).toDataURL().slice(-80));
+  const a = await snap();
+  await w.getByLabel(/Step size/).fill('-3');
+  await expect(w.locator('.readout')).toContainText('under 0.1 %');
+  expect(await snap()).not.toBe(a);
+  await w.getByRole('button', { name: 'Reset' }).click();
+  await expect(w.locator('.readout')).toContainText('17.9 %');
+});
+
 test('collapsed cards render their summary as Markdown, and a preview block shows the chosen parts of the body', async ({ page }) => {
   await page.goto('posts/ndob-design/');
   const sum = (id: string) => page.locator(`.react-flow__node-card[data-id="${id}"] .sum`);
@@ -57,8 +75,8 @@ test('feed and sitemap exist under the base path', async ({ request }) => {
 test('the articles page lists every post, the title opens its board, and tag pages filter', async ({ page }) => {
   await page.goto('articles/');
   await expect(page.locator('h2')).toContainText('article');
-  await expect(page.locator('.post')).toHaveCount(2);
-  await expect(page.locator('.post').first().locator('h3')).toHaveText('Designing a Nonlinear Disturbance Observer, Step by Step');
+  await expect(page.locator('.post')).toHaveCount(3);
+  await expect(page.locator('.post').first().locator('h3')).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
   const post = page.locator('.post', { hasText: 'Nonlinear Disturbance Observer for Robot Control' });
   await expect(post.locator('h3')).toHaveText('Nonlinear Disturbance Observer for Robot Control');
   // the title is the one way in; the board itself offers "Read as a page"

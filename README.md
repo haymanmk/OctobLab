@@ -70,6 +70,7 @@ npm run dev          # http://localhost:4321/OctobLab/
 npm run build        # static site in dist/
 npm test             # Playwright end-to-end suite against the built site
 node scripts/check-ndob-design.mjs   # prints the numbers quoted in the NDOB design article
+node scripts/check-reverse-step.mjs  # prints the numbers quoted in the diffusion small-steps article
 ```
 
 Pushing to `main` builds, runs the test suite, and deploys to GitHub Pages.

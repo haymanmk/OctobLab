@@ -5,4 +5,5 @@ export interface WidgetProps { props: Record<string, unknown>; active: boolean }
 export const registry: Record<string, LazyExoticComponent<ComponentType<WidgetProps>>> = {
   'ndob-sim': lazy(() => import('./NdobSim')),
   'ndob-design-sim': lazy(() => import('./NdobDesignSim')),
+  'reverse-step': lazy(() => import('./ReverseStep')),
 };
