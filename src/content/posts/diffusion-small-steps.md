@@ -10,28 +10,39 @@ split: h2
 
 <!-- summary: The decoder of a diffusion model treats every reverse step as a normal distribution. That is wrong in general and nearly right when $\beta_t$ is small. The reason fits in one picture: a narrow window, and a hill that looks like a ramp through it. -->
 
-Chapter 18 of Simon Prince's *Understanding Deep Learning* builds the decoder of a diffusion model from normal distributions, and says this approximation is reasonable if the hyperparameters $\beta_t$ are close to zero. Ho et al. (2020) and Lilian Weng's blog post say the same thing in one sentence each. None of them shows why.
+When I am studying **diffusion model** from Simon Prince's [*Understanding Deep Learning*](https://udlbook.github.io/udlbook/), Chapter 18 builds the decoder of a diffusion model from normal distributions, and says this approximation is reasonable if the hyperparameters $\beta_t$ are close to zero.
 
-The short answer: a small $\beta_t$ means the previous value must lie very close to the current one. Over such a short distance, the complicated distribution of the data can only *tilt* the answer a little. It cannot give it two humps or a lopsided shape. A normal curve that is tilted a little is still a normal curve, with its centre moved.
+[Ho et al. (2020)](https://arxiv.org/pdf/2006.11239) and [Lilian Weng's blog post](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/) say the same thing in one sentence each, but none of them shows why.
 
-The cards below build that answer step by step. Only two tools are needed: Bayes' rule and the formula of the normal curve. The last card is a live example where you can shrink $\beta$ and watch the true reverse step become normal.
+> Note:
+>
+> The hyperparameters $\beta_t \in [0, 1]$ determines how quickly the noise is blended into the original data, such as a dog's picture, during forward process (encoder). e.g. $z_t = \sqrt{1-\beta_t}\; z_{t-1} + \sqrt{\beta_t}\;\epsilon_t, \qquad \epsilon_t \sim \mathcal N(0, 1)$
+
+**The short answer**: *a small $\beta_t$ means the previous value must lie very close to the current one.*
+
+Over such a short distance, the complicated distribution of the data can only *tilt* the answer a little. It cannot give it two humps or a lopsided shape. A normal curve that is tilted a little is still a normal curve, with its centre moved.
+
+The cards below build that answer step by step. Only two tools are needed: **Bayes' rule** and **the formula of the normal curve**.
+
+The last card is a live [example](#try-it) where you can shrink $\beta$ and watch the true reverse step become normal.
 
 ## The setup in two formulas
 
+<!-- split: h3 -->
 <!-- summary: The forward step shrinks the value a little and adds noise of variance $\beta_t$. The decoder assumes the reverse step is normal, with a mean computed by a network. -->
 
-The notation follows the book: $x$ is a data example and $z_1, \dots, z_T$ are its noisier and noisier versions. Ho et al. and Lil'Log write $x_0$ for the data and $x_t$ for $z_t$.
+The notation follows the book: $x$ is a data example (e.g. a clear photo) and $z_1, \dots, z_T$ are its noisier and noisier versions.
 
-**Forward step (encoder).** Shrink the previous value a little and add fresh noise:
+>  Note: Ho et al. and Lil'Log write $x_0$ for the data and $x_t$ for $z_t$.
 
+**Forward step (encoder)**: shrink the previous value a little and add fresh noise:
 $$
 z_t = \sqrt{1-\beta_t}\; z_{t-1} + \sqrt{\beta_t}\;\epsilon_t, \qquad \epsilon_t \sim \mathcal N(0, 1)
 $$
 
 So $\beta_t$ is the variance of the noise added in step $t$, and $\sqrt{\beta_t}$ is the typical size of the jump. Written as a distribution, this is $q(z_t \mid z_{t-1}) = \mathcal N\big(\sqrt{1-\beta_t}\,z_{t-1},\ \beta_t\big)$.
 
-**Reverse step (decoder).** To generate data we must walk backwards: given $z_t$, draw a plausible $z_{t-1}$. The model *assumes* this is a normal distribution:
-
+**Reverse step (decoder)**: to generate data we must walk backwards: given $z_t$, draw a plausible $z_{t-1}$. The model *assumes* this is a normal distribution:
 $$
 Pr(z_{t-1} \mid z_t) = \mathcal N\big(f_t[z_t],\ \sigma_t^2\big)
 $$
@@ -39,6 +50,57 @@ $$
 where $f_t$ is a neural network that outputs the mean, and $\sigma_t^2$ is a fixed number. The question of this article is whether that assumption is justified.
 
 Everything here is written for one number per variable. For images, the same argument holds with vectors.
+
+### Watch both steps run
+
+<!-- summary: A puppy photo and 400 one-dimensional examples walk forward into noise, and fresh noise walks back through the reverse step. A quick demonstration, not needed for the argument. -->
+
+This card is a complement to the two formulas: it runs them, on a photo and on one-dimensional data with three clusters.
+
+```widget
+name: diffusion-chain
+beta: 0.02
+```
+
+**Forward, left to right (top row and upper plot).** The photo takes forward steps, and every colour value of every pixel gets its own noise. In the plot, each line is one data example doing the same thing with one number. The clusters dissolve, and at the right edge the values are spread like plain noise, whatever example they started from.
+
+**Reverse, right to left (lower plot and bottom row).** Each line starts from fresh noise and takes reverse steps, drawn from the normal distribution the decoder assumes. Here $f_t$ is not a trained network. It is the best possible mean, computed from the known clusters. At the left edge, the bars are the generated values and the outline is the real data.
+
+The photo row uses the best possible mean too, for a model whose whole dataset is this one photo. Such a model can only ever produce this puppy. A real model learns from many photos and produces new ones.
+
+Move the slider to a large $\beta$. The forward chain still ends in noise, in far fewer steps, but the generated bars come out smeared: lower and wider than the outline. That gap is the subject of the rest of the article. The photo does not show it: when the data is a single photo, the true reverse step is exactly normal for any step size.
+
+### When does the forward chain stop?
+
+<!-- summary: The demonstration does not test anything while it runs. $T$ is fixed in advance as the first step where the noise variance reaches $0.99$: $T = \lceil \ln 0.01 / \ln(1-\beta) \rceil$. -->
+
+The readout under the demonstration says how many steps the chain takes. The program does not test anything while the chain runs. The number is fixed before the first step, from a formula.
+
+Each forward step multiplies the value by $\sqrt{1-\beta}$ and adds noise of variance $\beta$. Doing that $t$ times collapses into one expression:
+
+$$
+z_t = \sqrt{\alpha_t}\;x + \sqrt{1-\alpha_t}\;\epsilon, \qquad \alpha_t = (1-\beta)^t
+$$
+
+After $t$ steps the data has been scaled down by $\sqrt{\alpha_t}$, and the noise collected so far has variance $1-\alpha_t$. The data never disappears completely, because $\alpha_t$ only approaches zero. So a cut-off is needed, and the demonstration uses $\alpha_T \le 0.01$: the noise variance has reached $0.99$ and the data is scaled down to a tenth.
+
+<!-- preview -->
+
+$$
+(1-\beta)^T \le 0.01 \quad\Longrightarrow\quad T = \left\lceil \frac{\ln 0.01}{\ln(1-\beta)} \right\rceil
+$$
+
+<!-- /preview -->
+
+With $\beta = 0.02$ this is $227.95$, rounded up to $228$.
+
+Three things follow:
+
+- **$T$ depends only on $\beta$.** The data and the random draws play no part, so every example takes the same number of steps.
+- **The cut-off is a choice.** A stricter one, $\alpha_T \le 0.001$, gives $342$ steps for the same $\beta$.
+- **Small steps mean many steps.** For small $\beta$, $\ln(1-\beta) \approx -\beta$, so $T \approx 4.6/\beta$. Halving the step size doubles the number of steps. This is the cost that the section "The price: many steps" comes back to.
+
+The formula relies on $\beta$ being the same at every step. With a schedule where $\beta_t$ changes, $\alpha_t$ is the product of all the factors $(1-\beta_s)$ up to step $t$.
 
 ## The true reverse step is a product of two curves
 
@@ -230,3 +292,4 @@ Three things to try:
 - J. Ho, A. Jain and P. Abbeel, "Denoising Diffusion Probabilistic Models", 2020, section 2: the forward and reverse processes "have the same functional form" when $\beta_t$ are small.
 - L. Weng, "What are Diffusion Models?", Lil'Log, 2021: if $\beta_t$ is small enough, the reverse conditional is also Gaussian.
 - J. Sohl-Dickstein, E. Weiss, N. Maheswaranathan and S. Ganguli, "Deep Unsupervised Learning using Nonequilibrium Thermodynamics", 2015, and W. Feller, "On the theory of stochastic processes, with particular reference to applications", 1949.
+- The puppy photo in the demonstration is a crop of [a golden retriever photo by RetyiRetyi](https://commons.wikimedia.org/wiki/File:Golden-retriever-1827903_1920.jpg) on Wikimedia Commons, released under CC0.
