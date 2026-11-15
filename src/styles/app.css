@@ -138,6 +138,10 @@
 .reader-body .content ul { padding-left: 1.2em; margin: 0 0 1em; }
 .reader-body .content li { margin-bottom: .4em; }
 .reader-body .content h3, .reader-body .content h4 { font-family: var(--serif); margin: 1.4em 0 .5em; }
+/* a heading reached through a link lights up briefly */
+[data-anchor].anchor-flash { animation: anchor-flash 1.4s ease-out; border-radius: 3px; }
+@keyframes anchor-flash { 0%, 35% { background: var(--hl); color: var(--hl-ink); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { [data-anchor].anchor-flash { animation: none; } }
 .reader-foot { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); flex: none; }
 .reader-foot button { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; font-size: 13px; text-align: left; min-width: 0; }
 .reader-foot button:hover { border-color: var(--accent); }

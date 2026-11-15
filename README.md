@@ -41,6 +41,7 @@ Inside the body:
 
   <!-- /preview -->
   ```
+- `[text](#heading-slug)` links to another heading of the same article, with the slug GitHub would give that heading. On the board the link opens the card that holds the heading and pans to it, and the browser's Back returns. The build prints a warning for a link that matches no heading.
 - A fenced block with the language `widget` places an interactive widget. On GitHub it renders as code.
 
   ````markdown

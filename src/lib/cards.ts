@@ -6,6 +6,11 @@
  * cards. Headings below the split depth stay inside the card body. A fenced block with the language `widget` becomes an interactive widget
  * slot; on GitHub it simply renders as code.
  *
+ * In-page links: every heading gets the slug GitHub would give it, in document order, so
+ * `[text](#heading-slug)` written once works on GitHub, on the plain reading page and on the board.
+ * `anchors` maps each slug to the card that holds that heading, whether the heading is a card of its
+ * own or stays inside a card's body.
+ *
  * What a collapsed card shows is the author's choice, in this order:
  *   1. the parts of the body wrapped in `<!-- preview -->` … `<!-- /preview -->` (they also stay in the body);
  *   2. the Markdown inside `<!-- summary: … -->`;
@@ -49,10 +54,14 @@ export interface ArticleGraph {
   tags: string[];
   version: string;
   cards: Card[];
+  /** Heading slug → id of the card that holds it. Card ids map to themselves. */
+  anchors: Record<string, string>;
+  /** Slug of the article's H1, which is the root card's title. Empty when the title comes from frontmatter. */
+  titleAnchor: string;
 }
 export interface ArticleMeta { title: string; description: string; date: string; tags?: string[]; split?: 'h2' | 'h3' | 'h4' }
 
-interface Section { level: number; title: string; nodes: RootContent[]; children: Section[]; splitTo: number; summary: string | null; preview: RootContent[]; inPreview: boolean }
+interface Section { level: number; title: string; slug: string; nodes: RootContent[]; children: Section[]; splitTo: number; summary: string | null; preview: RootContent[]; inPreview: boolean }
 
 const SPLIT_RE = /^<!--\s*split:\s*h([2-6])\s*-->$/i;
 const SUMMARY_RE = /^<!--\s*summary:\s*([\s\S]*?)\s*-->$/i;
@@ -70,12 +79,14 @@ function parseMarkdown(md: string): Root {
 
 /** Build a heading tree. Directive comments are consumed and attached to the section they sit in. */
 function sectionize(root: Root, fallbackTitle: string): Section {
-  const top: Section = { level: 0, title: fallbackTitle, nodes: [], children: [], splitTo: 0, summary: null, preview: [], inPreview: false };
+  const slugger = new GithubSlugger();
+  const top: Section = { level: 0, title: fallbackTitle, slug: '', nodes: [], children: [], splitTo: 0, summary: null, preview: [], inPreview: false };
   const stack: Section[] = [top];
   for (const node of root.children) {
     if (node.type === 'heading') {
       const h = node as Heading;
-      const sec: Section = { level: h.depth, title: mdToString(h), nodes: [], children: [], splitTo: 0, summary: null, preview: [], inPreview: false };
+      const title = mdToString(h);
+      const sec: Section = { level: h.depth, title, slug: slugger.slug(title), nodes: [], children: [], splitTo: 0, summary: null, preview: [], inPreview: false };
       while (stack.length > 1 && stack[stack.length - 1].level >= h.depth) stack.pop();
       stack[stack.length - 1].children.push(sec);
       stack.push(sec);
@@ -146,8 +157,8 @@ async function summaryOf(sec: Section, plain: string): Promise<{ text: string; h
 export async function buildArticle(id: string, markdown: string, meta: ArticleMeta): Promise<ArticleGraph> {
   const defaultDepth = meta.split ? +meta.split.slice(1) : 2;
   const tree = sectionize(parseMarkdown(markdown), meta.title);
-  const slugger = new GithubSlugger();
   const cards: Card[] = [];
+  const anchors: Record<string, string> = {};
 
   // Root: an opening H1 becomes the root card; otherwise the preamble is the root.
   let rootSec: Section;
@@ -155,7 +166,7 @@ export async function buildArticle(id: string, markdown: string, meta: ArticleMe
   if (tree.children.length && tree.children[0].level === 1 && tree.nodes.length === 0) {
     rootSec = tree.children[0]; rest = [...rootSec.children, ...tree.children.slice(1)];
   } else {
-    rootSec = { level: 1, title: meta.title, nodes: tree.nodes, children: tree.children, splitTo: tree.splitTo, summary: tree.summary, preview: tree.preview, inPreview: false }; rest = tree.children;
+    rootSec = { level: 1, title: meta.title, slug: '', nodes: tree.nodes, children: tree.children, splitTo: tree.splitTo, summary: tree.summary, preview: tree.preview, inPreview: false }; rest = tree.children;
   }
   if (!rootSec.summary && tree.summary) rootSec.summary = tree.summary;
   if (!rootSec.splitTo && tree.splitTo) rootSec.splitTo = tree.splitTo;
@@ -164,26 +175,35 @@ export async function buildArticle(id: string, markdown: string, meta: ArticleMe
   async function emit(sec: Section, parentId: string | null, allowDepth: number): Promise<void> {
     const isCard = parentId === null || sec.level <= allowDepth;
     if (!isCard) return; // folded into the parent body by collect()
-    const id = parentId === null ? 'root' : slugger.slug(sec.title);
+    const id = parentId === null ? 'root' : sec.slug;
+    anchors[id] = id; if (sec.slug) anchors[sec.slug] = id;
     const childDepth = Math.max(allowDepth, sec.splitTo);
     const inline: RootContent[] = [...sec.nodes];
     const cardKids: Section[] = [];
     for (const child of sec.children) {
       if (child.level <= childDepth) cardKids.push(child);
-      else inline.push(...collect(child));
+      else inline.push(...collect(child, id));
     }
     const { nodes, widgets } = extractWidgets(inline);
     const plain = plainOf(inline), sum = await summaryOf(sec, plain);
     cards.push({ id, parentId, level: sec.level, title: sec.title, html: await renderNodes(nodes), plain, summary: sum.text, summaryHtml: sum.html, hash: fnv1a(plain), widgets });
     for (const k of cardKids) await emit(k, id, childDepth);
   }
-  function collect(sec: Section): RootContent[] {
-    const heading: Heading = { type: 'heading', depth: Math.min(6, sec.level) as 1 | 2 | 3 | 4 | 5 | 6, children: [{ type: 'text', value: sec.title }] };
-    return [heading, ...sec.nodes, ...sec.children.flatMap(collect)];
+  /** A section that is not a card of its own: it stays in `cardId`'s body, and its heading keeps its slug as an id so links can reach it. */
+  function collect(sec: Section, cardId: string): RootContent[] {
+    anchors[sec.slug] = cardId;
+    const heading: Heading = { type: 'heading', depth: Math.min(6, sec.level) as 1 | 2 | 3 | 4 | 5 | 6, children: [{ type: 'text', value: sec.title }], data: { hProperties: { id: sec.slug } } };
+    return [heading, ...sec.nodes, ...sec.children.flatMap(c => collect(c, cardId))];
   }
   const rootForEmit: Section = { ...rootSec, children: rest };
   await emit(rootForEmit, null, defaultDepth);
 
+  // An in-page link that points at no heading is the author's typo; say so at build time.
+  for (const c of cards) for (const m of (c.html + c.summaryHtml).matchAll(/<a\b[^>]*\shref="#([^"]*)"/g)) {
+    let target = m[1].replace(/&#x26;|&amp;/g, '&'); try { target = decodeURIComponent(target); } catch { /* keep as written */ }
+    if (target && !anchors[target] && !c.html.includes(`id="${target}"`)) console.warn(`[cards] ${id}: the link to "#${target}" in the card "${c.title}" matches no heading in this article.`);
+  }
+
   const version = fnv1a(cards.map(c => c.hash).join('|'));
-  return { id, title: meta.title, description: meta.description, date: meta.date, tags: meta.tags || [], version, cards };
+  return { id, title: meta.title, description: meta.description, date: meta.date, tags: meta.tags || [], version, cards, anchors, titleAnchor: rootSec.slug };
 }

@@ -8,6 +8,7 @@ import { NoteEditor } from './reader/NoteEditor';
 import { Toasts, toast } from './toast';
 import { toggleTheme } from './theme';
 import { clamp } from './types';
+import { decodeHash } from './links';
 import { IconBack, IconBoard, IconFold, IconMenu, IconNotes, IconRead, IconReader, IconTheme } from './board/icons';
 import '../styles/app.css';
 
@@ -25,11 +26,17 @@ export default function BoardApp({ article, base }: { article: ArticleGraph; bas
   const setMode = useStore(s => s.setMode);
   useEffect(() => { setMode(mode); }, [mode, setMode]);
   useEffect(() => {
-    const h = decodeURIComponent(location.hash.slice(1));
+    const h = decodeHash(location.hash);
     useStore.setState({ pendingHash: h || null });
     useStore.getState().init(article).then(() => setReady(true));
     startPersistence();
   }, [article]);
+  /* Back and Forward, or a hash typed into the address bar: show the card that heading lives in */
+  useEffect(() => {
+    const onHash = () => { const h = decodeHash(location.hash), s = useStore.getState(); if (h && h !== 'notes' && s.laidOut) s.goToAnchor(h); };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   // reader resizer (desktop)
   const rz = useRef<{ sx: number; sw: number } | null>(null);

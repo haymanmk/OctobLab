@@ -22,7 +22,7 @@ const rest = article.cards.slice(1);
       <a class="board-link btn small" href={`${BASE}posts/${article.id}/`}>Open on the board</a>
     </div>
     <article>
-      <h1>{article.title}</h1>
+      <h1 id={article.titleAnchor || undefined}>{article.title}</h1>
       <div class="lmeta">{article.date} · {article.cards.length} cards · the same cards, read top to bottom</div>
       <Fragment set:html={root.html} />
       {rest.map(c => (

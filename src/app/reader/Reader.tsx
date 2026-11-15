@@ -9,6 +9,7 @@ import { toast } from '../toast';
 import { boardApi } from '../boardApi';
 import { clamp } from '../types';
 import { IconClose, IconLocate } from '../board/icons';
+import { findAnchor, scrollToAnchor } from '../links';
 
 interface PopAction { label: string; fn: () => void; drag?: () => Hl | null; dragLabel?: string }
 interface Anchored { hl: Hl; r: Range; start: number; end: number }
@@ -41,6 +42,15 @@ export function Reader() {
     if (reg && HighlightCtor) reg.set('hl', new HighlightCtor(...ranges));
   }, [card?.id, card?.html, highlights]);
   useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = 0; setPop(null); }, [card?.id]);
+  /* a link to a heading inside this card: scroll to it once, after the card is showing */
+  const anchorReq = useStore(s => s.anchorReq);
+  const anchorDone = useRef(0);
+  useEffect(() => {
+    const body = bodyRef.current, content = contentRef.current;
+    if (!anchorReq || anchorReq.n === anchorDone.current || !card || !body || !content || article.anchors[anchorReq.anchor] !== card.id) return;
+    anchorDone.current = anchorReq.n;
+    const el = findAnchor(content, anchorReq.anchor); if (el) scrollToAnchor(body, el);
+  }, [anchorReq, card?.id, article]);
   useEffect(() => {
     const down = (e: PointerEvent) => { if (pop && popRef.current && !popRef.current.contains(e.target as Node)) setPop(null); };
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setPop(null); };

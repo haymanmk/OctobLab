@@ -38,6 +38,8 @@ interface State {
   pulseId: string | null;
   warned: boolean;
   pendingHash: string | null;
+  /** A heading the reader should scroll to once its card is showing. */
+  anchorReq: { anchor: string; n: number } | null;
 
   init: (article: ArticleGraph) => Promise<void>;
   sizeOf: (id: string) => Size;
@@ -64,6 +66,7 @@ interface State {
   addNote: (highlightId: string, pos?: Pos) => string | null;
   removeNote: (id: string, silent?: boolean) => void;
   select: (id: string, opts?: SelectOpts) => void;
+  goToAnchor: (anchor: string, opts?: { push?: boolean }) => boolean;
   focus: (id: string) => void;
   setReaderOpen: (v: boolean) => void;
   setSidebarOpen: (v: boolean) => void;
@@ -91,7 +94,7 @@ export const useStore = create<State>((set, get) => ({
   highlights: [], notes: [], measured: {}, loaded: false, laidOut: false,
   input: null, readerW: 440, sidebarPref: true, mode: 'desk',
   selected: null, readerOpen: true, sidebarOpen: true, tab: 'toc', mtab: 'board', simFold: false,
-  lastToggled: null, revealId: null, animTick: 0, fitTick: 0, focusReq: null, pulseId: null, warned: false, pendingHash: null,
+  lastToggled: null, revealId: null, animTick: 0, fitTick: 0, focusReq: null, pulseId: null, warned: false, pendingHash: null, anchorReq: null,
 
   init: async article => {
     set({ article, overlay: emptyOverlay(article.id), highlights: [], notes: [], measured: {}, loaded: false, laidOut: false,
@@ -124,7 +127,7 @@ export const useStore = create<State>((set, get) => ({
     for (const n of st.notes) if (!positions[n.id]) { const hl = st.highlights.find(h => h.id === n.highlightId); const src = hl ? positions[hl.cardId] : null; const sz = st.sizeOf(hl?.cardId ?? ''); positions[n.id] = src ? { x: src.x + 40, y: src.y + sz.h + 36 } : { x: 0, y: 0 }; touched = true; }
     if (touched) set({ overlay: { ...st.overlay, positions } });
     set({ laidOut: true, fitTick: get().fitTick + 1 });
-    const ph = get().pendingHash; if (ph) { set({ pendingHash: null }); if (ph === 'notes') { set({ tab: 'notes', sidebarOpen: true, mtab: 'notes' }); } else if (get().article!.cards.some(c => c.id === ph)) setTimeout(() => get().select(ph, { open: true, focus: true }), 120); }
+    const ph = get().pendingHash; if (ph) { set({ pendingHash: null }); if (ph === 'notes') { set({ tab: 'notes', sidebarOpen: true, mtab: 'notes' }); } else setTimeout(() => get().goToAnchor(ph), 120); }
   },
 
   afterSizeChange: id => { const s = get(); if (!s.article) return; if (s.overlay.manual) s.pushApart(id); else s.relayout(id, true); },
@@ -225,6 +228,15 @@ export const useStore = create<State>((set, get) => ({
     set(patch);
     if (focus) get().focus(id);
     try { history.replaceState(null, '', '#' + id); } catch {}
+  },
+  /** Open the card that holds a heading, by the heading's slug. With `push`, the browser's Back returns to where the reader was. */
+  goToAnchor: (anchor, opts = {}) => {
+    const s = get(); const cardId = s.article?.anchors[anchor]; if (!cardId) return false;
+    if (opts.push) { try { history.pushState(null, '', '#' + anchor); } catch {} }
+    s.select(cardId, { open: true, focus: true });
+    if (anchor !== cardId) { try { history.replaceState(null, '', '#' + anchor); } catch {} }
+    set(st => ({ anchorReq: { anchor, n: (st.anchorReq?.n ?? 0) + 1 } }));
+    return true;
   },
   focus: id => { set(s => ({ focusReq: { id, n: (s.focusReq?.n ?? 0) + 1 }, pulseId: id })); setTimeout(() => { if (get().pulseId === id) set({ pulseId: null }); }, 1200); },
   setReaderOpen: v => set({ readerOpen: v }),

@@ -36,3 +36,16 @@ test('phone: tabs, finger pan, card drag by title, tap opens the reader', async 
   await page.getByRole('button', { name: 'Board' }).click();
   await expect(page.getByTestId('board')).toBeVisible();
 });
+
+test('phone: tapping a link to another heading opens that card in the reader', async ({ page }) => {
+  page.on('pageerror', e => { throw new Error('page error: ' + e.message); });
+  await page.addInitScript(() => localStorage.setItem('octoblab.helpSeen', 'true'));
+  await page.goto('posts/diffusion-small-steps/#root');
+  await expect(page.getByTestId('app')).toHaveAttribute('data-mtab', 'read');
+  await expect(page.getByTestId('reader-title')).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+  await page.locator('.reader .content a[href="#try-it"]').tap();
+  await expect(page.getByTestId('reader-title')).toHaveText('Try it');
+  await expect(page.getByTestId('app')).toHaveAttribute('data-mtab', 'read');
+  await page.goBack();
+  await expect(page.getByTestId('reader-title')).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+});

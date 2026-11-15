@@ -133,3 +133,42 @@ test('the home page stage plays the three clips in turn and the columns switch i
   await expect(videos.nth(0)).toBeVisible({ timeout: 15000 });
   await expect(page.locator('.stage-now')).toContainText('Contents');
 });
+
+test('a link to another heading works on the board: it opens that card, and Back returns', async ({ page }) => {
+  page.on('pageerror', e => { throw new Error('page error: ' + e.message); });
+  await page.addInitScript(() => localStorage.setItem('octoblab.helpSeen', 'true'));
+  const title = page.getByTestId('reader-title');
+  const selected = page.locator('.react-flow__node-card .card.selected');
+  // from the reader
+  await page.goto('posts/diffusion-small-steps/#root');
+  await expect(title).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+  await page.locator('.reader .content a[href="#try-it"]').click();
+  await expect(title).toHaveText('Try it');
+  await expect(selected).toHaveAttribute('data-id', 'try-it');
+  await expect(page.locator('.react-flow__node-card[data-id="try-it"]')).toBeInViewport({ ratio: 1 });
+  expect(await page.evaluate(() => location.hash)).toBe('#try-it');
+  await page.goBack();
+  await expect(title).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+  await page.goForward();
+  await expect(title).toHaveText('Try it');
+  // from a card expanded on the board
+  await page.goto('posts/diffusion-small-steps/');
+  await expect(page.locator('.react-flow__node-card')).toHaveCount(15);
+  await page.getByRole('button', { name: 'Fit', exact: true }).click();
+  await page.locator('.react-flow__node-card[data-id="root"] .tog').click();
+  await page.locator('.react-flow__node-card[data-id="root"] .card-body a[href="#try-it"]').click();
+  await expect(title).toHaveText('Try it');
+  // the address of a heading opens its card, including the article's own H1
+  await page.goto('posts/diffusion-small-steps/read/');
+  await page.goto('posts/diffusion-small-steps/#why-small-steps-make-the-reverse-diffusion-step-normal');
+  await expect(title).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
+  // card text never leaves real ids on the board, so the browser cannot scroll the canvas to a fragment
+  expect(await page.locator('.reader .content [id], .card-body [id]').count()).toBe(0);
+});
+
+test('the reading page gives the title and the sections their heading ids', async ({ page }) => {
+  await page.goto('posts/diffusion-small-steps/read/');
+  await expect(page.locator('h1')).toHaveAttribute('id', 'why-small-steps-make-the-reverse-diffusion-step-normal');
+  await page.locator('article a[href="#try-it"]').click();
+  await expect(page.locator('section#try-it')).toBeInViewport();
+});
