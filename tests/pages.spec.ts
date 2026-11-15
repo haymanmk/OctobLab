@@ -16,7 +16,7 @@ test('the design article renders its math and tables, and its simulation runs an
   await expect(page.locator('h1')).toHaveText('Designing a Nonlinear Disturbance Observer, Step by Step');
   await expect(page.locator('.katex-error')).toHaveCount(0);
   await expect(page.locator('article table')).toHaveCount(2);
-  const w = page.locator('.widget');
+  const w = page.locator('.widget:not(.widget-loading)');
   await w.scrollIntoViewIfNeeded();
   await expect(w.locator('.st')).toHaveText('● live');
   const snap = () => w.locator('canvas').evaluate(c => (c as HTMLCanvasElement).toDataURL().slice(-80));
@@ -33,7 +33,7 @@ test('the diffusion article renders, and its reverse-step demo turns normal as t
   await expect(page.locator('h1')).toHaveText('Why Small Steps Make the Reverse Diffusion Step Normal');
   await expect(page.locator('.katex-error')).toHaveCount(0);
   await expect(page.locator('article table')).toHaveCount(2);
-  const w = page.locator('[data-widget="reverse-step"] .widget');
+  const w = page.locator('[data-widget="reverse-step"] .widget:not(.widget-loading)');
   await expect(w.locator('canvas')).toBeVisible();
   await w.scrollIntoViewIfNeeded();
   await expect(w.locator('.readout')).toContainText('17.9 %');
@@ -48,7 +48,7 @@ test('the diffusion article renders, and its reverse-step demo turns normal as t
 
 test('the diffusion article draws the forward and reverse chain, and a larger step size needs fewer steps', async ({ page }) => {
   await page.goto('posts/diffusion-small-steps/read/');
-  const w = page.locator('[data-widget="diffusion-chain"] .widget');
+  const w = page.locator('[data-widget="diffusion-chain"] .widget:not(.widget-loading)');
   await expect(w.locator('canvas')).toBeVisible();
   await w.scrollIntoViewIfNeeded();
   await expect(w.locator('canvas')).toHaveAttribute('data-photo', 'ready');
