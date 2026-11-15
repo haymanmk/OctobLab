@@ -53,6 +53,7 @@ Everything here is written for one number per variable. For images, the same arg
 
 ### Watch both steps run
 
+<!-- split: h4 -->
 <!-- summary: A puppy photo and 400 one-dimensional examples walk forward into noise, and fresh noise walks back through the reverse step. A quick demonstration, not needed for the argument. -->
 
 This card is a complement to the two formulas: it runs them, on a photo and on one-dimensional data with three clusters.
@@ -70,7 +71,7 @@ The photo row uses the best possible mean too, for a model whose whole dataset i
 
 Move the slider to a large $\beta$. The forward chain still ends in noise, in far fewer steps, but the generated bars come out smeared: lower and wider than the outline. That gap is the subject of the rest of the article. The photo does not show it: when the data is a single photo, the true reverse step is exactly normal for any step size.
 
-### When does the forward chain stop?
+#### When does the forward chain stop?
 
 <!-- summary: The demonstration does not test anything while it runs. $T$ is fixed in advance as the first step where the noise variance reaches $0.99$: $T = \lceil \ln 0.01 / \ln(1-\beta) \rceil$. -->
 
